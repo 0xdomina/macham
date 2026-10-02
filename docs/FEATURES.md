@@ -7,9 +7,13 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 
 - Seams: `StoreAdapter`, `AIProvider`, shared types, mock store,
   OpenAI-compatible client (Groq, DeepSeek). Tests green.
+- Doctrine: `ARCHITECTURE.md`, `STANDARDS.md`, `UI_SYSTEM.md`,
+  `AI_FEATURES.md`, `RESEARCH.md`.
 
 ## NEXT (in order)
 
+0. **Safety harness + provider router + mock double.** Before any
+   assistant. See `AI_FEATURES.md`.
 1. **Bulk-tier engine.** Qty break tables per SKU (min, tiers, value vs
    unit MOQ). Auto price from table. Below-MOQ: priced premium or reject
    with next-tier nudge. Files: `src/negotiation/tiers.ts`, tests.
@@ -19,16 +23,19 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 3. **Guardrail engine.** Floor margin, max % off without approval, MAP
    per brand, approval chain by amount/category/risk. Model proposes,
    rules dispose. Every concession logged. Files: `src/negotiation/guardrails.ts`.
-4. **Clearance picker.** Only flagged/overstock/promoted SKUs may be
-   discounted to win. Never touch full-price anchors.
-5. **Checkout execution (PayPal sandbox).** Quote → Orders v2 create →
+4. **Seller engine caps** (listing, pricing, insights, accounting,
+   marketing, brief, recommendations) per `AI_FEATURES.md`.
+5. **Buyer proxy** (intent → search/compare → cart proposal → chat)
+   per `AI_FEATURES.md`.
+6. **Checkout execution (PayPal sandbox).** Quote → Orders v2 create →
    approve → authorize → capture-within-tolerance → receipt + refund
    path. Files: `src/rails/paypal.ts`, Postman collection.
-6. **Catalog enrichment lane.** Channel3 search/lookup behind the
+7. **Catalog enrichment lane.** Channel3 search/lookup behind the
    adapter seam (server key only). Files: `src/catalog/channel3.ts`.
-7. **Ledger dashboard (AG Grid Community).** Transaction ledger +
-   approval queue. Enterprise AI Toolkit only if scored.
-8. **Voice loop.** Mic → intent → summary TTS on the buyer micro-frontend.
+8. **Ledger dashboard** (`UI_SYSTEM.md` tokens) + approval queue with
+   Undo + audit.
+9. **Voice loop.** Mic → intent → summary TTS on the buyer
+   micro-frontend.
 
 ## LATER
 

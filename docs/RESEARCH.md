@@ -45,15 +45,61 @@ gaps — verify before building on them.
 - Past pattern (Dev Days 2025): working money movement + current SDKs +
   live demo beats slideware.
 
-## Partner stack (status: direction from program brief + prior passes)
+## Partner stack (deep-pass 2026-10-02, verified docs/repos)
 
-- Channel3 API/UI repos, AG Grid Community MIT, APIMatic context
-  plugins, Postman free mocks/collections, Kernel/Browserbase-class
-  stealth browsers, self-hosted Elastic, Astropods blueprints, Skyvern
-  AGPL pattern, Gradbot→LiveKit voice path.
+- **Channel3**: API `api.trychannel3.com` (`x-api-key`, server-only),
+  1000 free calls/mo, affiliate cut; `shopping-assistant` (archived
+  demo — fork the tool-loop pattern, not the app); `channel3-ui` MIT
+  shadcn registry (use directly, presentational only).
+- **AG Grid**: Community MIT incl. production (Quartz theme, sorting,
+  filter, pagination). Enterprise ($999/dev) only for AI Toolkit and
+  server-side features. Never ship the watermark.
+- **APIMatic**: context plugin/MCP feeds versioned API docs to coding
+  agents (63% faster integration claimed). Generate ours, consume
+  PayPal's. Do not build docs-RAG.
+- **Postman**: free mocks/collections/flows; public workspace + fork
+  link is cheap judging evidence. Past winner cited for it.
+- **Kernel**: headless $0.06/hr, stealth + CAPTCHA solver, $5 free
+  credit. Fallback lane only, never first resort.
+- **Elastic**: self-host Docker for the build (free); hosted only for
+  a production story. Trial data deletes after 30d.
+- **Astropods**: blueprint registry + deploy/governance; keep agent
+  logic portable regardless.
+- **Skyvern**: AGPL — adapt the `page.act` pattern, self-host or Cloud
+  free 5k credits. Watch copyleft before forking commercially.
+- **Voice**: prototype Gradbot (50-line loop, trial credits), ship
+  LiveKit (free 1000 agent-min/mo).
 - TBD (verify before spending): exact sponsor-bonus thresholds per
-  partner, AG Grid Enterprise AI Toolkit packaging, Bryntum license
-  cost confirmation, Kernel/Flexible-stealth pricing, APIMatic portal
-  mechanics, Astropods free-tier limits, InstaCloud-vs-Render free-tier
-  terms for the demo host. Awaiting the partner deep-pass report; fold
-  findings here on arrival.
+  partner, Astropods free-tier limits, InstaCloud-vs-Render terms for
+  the demo host.
+
+## UI/UX system (deep-pass 2026-10-02)
+
+- Steal list (all MIT/compatible): shadcn/ui primitives, assistant-ui
+  chat (Thread/Message/Composer, approval cards), channel3-ui blocks,
+  AG Grid Community, dashboard shells (MIT starters only — never the
+  Vercel chatbot verbatim, license unclear).
+- Type: Space Grotesk display + Inter body + JetBrains Mono money.
+  Two weights per family max.
+- Monochrome tokens in `UI_SYSTEM.md`; danger red for irreversible
+  money only; status by icon + label, never hue alone.
+- Motion budget: CSS-first (80%), one stagger hook, 900ms number
+  tweens, reduced-motion respected. No parallax, no confetti.
+- Chat: instant streaming, tool transparency cards, approval cards
+  with amount + masked account, max 3 suggestion chips, 44px mic.
+- Dashboards: 56px mobile rows, chip filters with Clear all, four
+  distinct empty states, Undo window + audit on every auto action.
+- Mobile: 44px targets, thumb-reach primaries, bottom sheets, safe
+  areas, WebView null-origin + keyboard overlap handling.
+- Copy seeds in `UI_SYSTEM.md` follow the platform standard.
+
+## How's U AI inventory (verified in-repo 2026-10-02)
+
+Seams to mirror: provider registry + failover + mock double,
+per-thread cursor/last-success, hidden provider identity, usage hook.
+Bring: safety harness, listing writer, pricing advisor, insights Q&A,
+accounting digest, marketing coach, brief + deterministic ranker,
+buyer chat + intent classifier + search/compare + cart proposal
+(proposal-never-mutation). Later: review summaries. Skip: quota
+ledgers, RBAC, persistence, dead placeholders. Full table in
+`AI_FEATURES.md`.
