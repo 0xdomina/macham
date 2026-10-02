@@ -1,19 +1,24 @@
 # Macham
 
-Store-agnostic AI SDK for e-commerce. Any store in, assistance out.
+Agentic commerce SDK. Any store in, assistance out — with a Merchant engine
+on the seller's end and a Buyer proxy on the shopper's end.
 
-## Idea
+## Position
 
-Every store speaks its own dialect (Medusa, Shopify, WooCommerce, custom).
-Assistants should not. Macham defines two seams:
+Most stores run **fixed prices**. Macham does not haggle over them. It
+negotiates only where negotiation is real: bulk tiers, clearance, shipping
+and terms — inside merchant guardrails, with every concession logged.
+See `docs/FEATURES.md` for the scope verdict and `docs/RESEARCH.md` for
+the evidence behind it.
 
-- `StoreAdapter` — translate one platform into Macham shapes (products,
-  categories, and later carts, orders, customers).
-- `AIProvider` — one client for every OpenAI-compatible chat API, with
-  named constructors for Groq and DeepSeek.
+## Layout
 
-Features attach to the seams, never to a store. A buyer assistant written
-once runs against any adapter.
+- `src/types.ts` — shared commerce shapes. Assistants speak Macham only.
+- `src/adapters/` — the `StoreAdapter` seam plus a runnable mock store.
+- `src/providers/` — the `AIProvider` seam plus an OpenAI-compatible client
+  (Groq, DeepSeek constructors included).
+- `docs/` — architecture, standards, feature map, research index.
+- `test/` — seam contract tests. Green before every commit.
 
 ## Use
 
@@ -28,7 +33,14 @@ const answer = await brain.chat([
 ])
 ```
 
-## Status
+```bash
+npm install
+npm test
+```
 
-Seams plus mock store plus providers. Assistants land feature by feature.
-No How's U code lives here; ideas may be reimplemented, never copied.
+## Rules
+
+`docs/STANDARDS.md` is load-bearing: TypeScript strict, tests green,
+fail-closed money paths, secrets never in code, copy standard on every
+user-facing string. Features land feature by feature; nothing ships
+without its map entry in `docs/FEATURES.md`.
