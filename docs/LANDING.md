@@ -11,8 +11,8 @@ Macham · Docs · Pricing · GitHub · [Get API key]
 
 **Every store gets an assistant. Every shopper gets answers.**
 
-One snippet. Your catalog answers questions, proposes carts, and hands
-over cleanly. Works with any store.
+One snippet. Your catalog answers questions, proposes carts, and
+settles through PayPal. Works with any store.
 
 ```
 npm i macham
@@ -58,6 +58,7 @@ Real code, copy button, working in 60 seconds.
 | 14 messages per order | 3 |
 | Replies in 6 hours | Answers in 4 seconds |
 | Missed carts stay missed | One nudge at 30 seconds |
+| Redirect maze at checkout | Approve in chat. PayPal settles |
 | Every store looks like us | Your colors. Your name. Your tone |
 | Returns cost ₦12,000 per ticket | Self-serve in 2 minutes |
 

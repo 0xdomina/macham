@@ -1,7 +1,8 @@
 # Macham
 
-Agentic commerce SDK. Any store in, assistance out — with a Merchant engine
-on the seller's end and a Buyer proxy on the shopper's end.
+Agentic commerce for any store. Shoppers talk. Macham understands,
+negotiates inside your rules, and settles through PayPal — with a
+Merchant engine on the seller's end and a Buyer proxy on the shopper's.
 
 ## Position
 
