@@ -1,0 +1,21 @@
+{
+  "name": "macham",
+  "version": "0.1.0",
+  "description": "Store-agnostic AI SDK for e-commerce. Any store in, assistance out.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"./test/*.mjs\"",
+    "smoke": "npm run build && node ./smoke.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
