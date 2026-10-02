@@ -1,0 +1,84 @@
+{
+  "info": {
+    "name": "Macham rails",
+    "description": "Money and catalog calls behind the demo. PayPal runs sandbox-first. Channel3 needs a server key. Macham SDK calls (tiers, guardrails, proposals) run in-process — see test/ for executable contracts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "paypal_base", "value": "https://api-m.sandbox.paypal.com" },
+    { "key": "channel3_base", "value": "https://api.trychannel3.com" }
+  ],
+  "item": [
+    {
+      "name": "PayPal",
+      "item": [
+        {
+          "name": "OAuth token",
+          "request": {
+            "method": "POST",
+            "url": "{{paypal_base}}/v1/oauth2/token",
+            "auth": { "type": "basic", "basic": [{ "key": "username", "value": "{{PAYPAL_CLIENT_ID}}" }, { "key": "password", "value": "{{PAYPAL_SECRET}}" }] },
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "grant_type", "value": "client_credentials" }] }
+          }
+        },
+        {
+          "name": "Create order",
+          "request": {
+            "method": "POST",
+            "url": "{{paypal_base}}/v2/checkout/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "PayPal-Request-Id", "value": "{{$guid}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"intent\": \"CAPTURE\",\n  \"purchase_units\": [{ \"invoice_id\": \"INV-1\", \"amount\": { \"currency_code\": \"USD\", \"value\": \"25.00\" } }]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get order",
+          "request": { "method": "GET", "url": "{{paypal_base}}/v2/checkout/orders/:id" }
+        },
+        {
+          "name": "Capture order",
+          "request": {
+            "method": "POST",
+            "url": "{{paypal_base}}/v2/checkout/orders/:id/capture",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "PayPal-Request-Id", "value": "{{$guid}}" }],
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "Refund capture",
+          "request": {
+            "method": "POST",
+            "url": "{{paypal_base}}/v2/payments/captures/:id/refund",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "PayPal-Request-Id", "value": "{{$guid}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": { \"value\": \"25.00\", \"currency_code\": \"USD\" }\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Channel3",
+      "item": [
+        {
+          "name": "Search products",
+          "request": {
+            "method": "POST",
+            "url": "{{channel3_base}}/v1/search",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-api-key", "value": "{{CHANNEL3_API_KEY}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"warm jackets\",\n  \"limit\": 10\n}" }
+          }
+        },
+        {
+          "name": "Lookup product",
+          "request": {
+            "method": "POST",
+            "url": "{{channel3_base}}/v1/lookup",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-api-key", "value": "{{CHANNEL3_API_KEY}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://example.com/product\"\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}
