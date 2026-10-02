@@ -10,7 +10,7 @@ export type BuyerIntent =
   | "general"
 
 const STOPWORDS = new Set(
-  "a,an,the,and,or,for,to,of,in,on,with,me,my,i,please,show,find,get".split(",")
+  "a,an,the,and,or,for,to,of,in,on,with,me,my,i,please,show,find,get,hello,hi,hey,there,friend,thanks,thank,yo,dear".split(",")
 )
 
 export function extractKeywords(message: string): string[] {
