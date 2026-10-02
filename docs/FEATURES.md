@@ -39,6 +39,8 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 
 ## LATER
 
+- Buyer widget snippet (`Assistant` bubble per `MASCOT.md`) + mascot
+  config (tiers, tone mapping).
 - Multi-supplier RFQ broadcast, CPQ-style approval chains, shipping-terms
   negotiation (Incoterms, split shipments), Rialo audit anchoring,
   browser fallback lane, seller/buyer onboarding flows, demo video script.

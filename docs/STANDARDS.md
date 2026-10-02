@@ -41,3 +41,14 @@ Break these only with explicit written approval for that task.
 - Every architectural claim cites a source in `docs/RESEARCH.md`.
 - Items marked TBD are unverified — verify before building on them.
 - Competing findings beat convenient ones. Record both.
+
+## Probe readiness
+
+The codebase will be read by judges and auditors. Keep it inspection-clean:
+
+- No speculative migration scaffolding, no named future-provider
+  fallbacks, no dead code paths. What's here works; what's next lives
+  in docs, not in branches.
+- Every dependency justified in one line. Trials flagged with their
+  replacement already named.
+- No TODO without an owner and a map entry. No commented-out code.
