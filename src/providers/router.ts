@@ -28,7 +28,7 @@ export class ProviderRouter implements AIProvider {
   private readonly timeoutMs: number
   private readonly maxAttempts: number
   private readonly onUsage?: RouterOptions["onUsage"]
-  private lastSuccess: string | null = null
+  private readonly lastSuccess = new Map<string, string>()
 
   constructor(opts: RouterOptions) {
     if (!opts.providers.length) throw new Error("Router needs providers")
@@ -38,13 +38,14 @@ export class ProviderRouter implements AIProvider {
     this.maxAttempts = Math.max(1, opts.maxAttempts ?? opts.providers.length)
   }
 
-  private order(): AIProvider[] {
+  private order(stickKey: string): AIProvider[] {
     const eligible = this.enabled
       ? this.providers.filter((p) => this.enabled!.has(p.name))
       : [...this.providers]
     if (!eligible.length) throw new ProviderUnavailableError([])
-    if (this.lastSuccess) {
-      const i = eligible.findIndex((p) => p.name === this.lastSuccess)
+    const last = this.lastSuccess.get(stickKey)
+    if (last) {
+      const i = eligible.findIndex((p) => p.name === last)
       if (i > 0) {
         const [hit] = eligible.splice(i, 1)
         eligible.unshift(hit)
@@ -53,15 +54,18 @@ export class ProviderRouter implements AIProvider {
     return eligible
   }
 
-  async chat(messages: ChatMessage[], opts?: { maxTokens?: number; temperature?: number }): Promise<ChatResult> {
+  async chat(messages: ChatMessage[], opts?: { maxTokens?: number; temperature?: number; tenantId?: string }): Promise<ChatResult> {
     const failed: string[] = []
-    for (const provider of this.order().slice(0, this.maxAttempts)) {
+    // Stickiness is per tenant: platform A's healthy provider says nothing
+    // about platform B. Shared singletons never leak tenant state.
+    const stickKey = opts?.tenantId ? `tenant:${opts.tenantId}` : "global"
+    for (const provider of this.order(stickKey).slice(0, this.maxAttempts)) {
       try {
         const result = await withTimeout(
           provider.chat(messages, opts),
           this.timeoutMs
         )
-        this.lastSuccess = provider.name
+        this.lastSuccess.set(stickKey, provider.name)
         this.onUsage?.({ provider: provider.name, ok: true })
         // Identity stays inside: callers get text only.
         return { text: result.text, model: "assistant" }

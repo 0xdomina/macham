@@ -93,6 +93,9 @@ export function scrubText(text: string): CheckResult {
 export type HarnessOptions = {
   capabilities: CapabilityDef[]
   brain: AIProvider
+  // Tenant scope is mandatory: readers are host-injected per tenant, and
+  // the harness refuses to run without knowing whose data it guards.
+  tenantId: string
   // Readers the model may see (catalog JSON, aggregates). Unknown keys refuse.
   readers?: Record<string, () => Promise<unknown>>
 }
@@ -101,8 +104,12 @@ export class Harness {
   private readonly caps: Map<string, CapabilityDef>
   private readonly brain: AIProvider
   private readonly readers: Record<string, () => Promise<unknown>>
+  readonly tenantId: string
 
   constructor(opts: HarnessOptions) {
+    const id = (opts.tenantId ?? "").trim()
+    if (!id) throw new Error("Tenant needed.")
+    this.tenantId = id
     this.caps = new Map(opts.capabilities.map((c) => [c.key, c]))
     this.brain = opts.brain
     this.readers = opts.readers ?? {}

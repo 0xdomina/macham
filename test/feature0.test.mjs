@@ -57,6 +57,7 @@ test("scrubber refuses contact details", () => {
 test("harness runs a capability through its contract", async () => {
   const brain = new MockProvider("b", { write: '{"title":"Nice Tee"}' })
   const harness = new Harness({
+    tenantId: "platform-a",
     brain,
     capabilities: [
       {
