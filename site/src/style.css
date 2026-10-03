@@ -1,0 +1,72 @@
+:root {
+  --paper: #FFFFFF; --paper-2: #F5F5F5;
+  --ink: #0A0A0A; --ink-2: #3A3A3A; --ink-3: #6B6B6B;
+  --hairline: #E5E5E5;
+  --m-quick: 180ms; --m-standard: 280ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+nav.top {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--hairline);
+}
+nav.top .wrap { display: flex; align-items: center; gap: 18px; padding-top: 12px; padding-bottom: 12px; }
+.logo { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 17px; text-decoration: none; color: var(--ink); margin-right: auto; }
+nav.top a:not(.logo) { font-size: 13px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--ink); color: #fff; border: 0; border-radius: 999px;
+  padding: 13px 26px; font-size: 15px; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+}
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--hairline); }
+.hero { padding: 72px 0 40px; }
+.hero h1 {
+  font-family: "Space Grotesk", sans-serif; font-weight: 700;
+  font-size: clamp(36px, 7vw, 60px); letter-spacing: -0.03em; line-height: 1.04;
+  margin: 0 0 14px;
+}
+.hero p.sub { font-size: 17px; color: var(--ink-2); line-height: 1.55; max-width: 34em; margin: 0 0 22px; }
+.cta-row { display: flex; gap: 10px; flex-wrap: wrap; }
+section.block { padding: 44px 0; border-top: 1px solid var(--hairline); }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px; }
+h2.sec { font-family: "Space Grotesk", sans-serif; font-size: 26px; letter-spacing: -0.02em; margin: 0 0 14px; }
+li.tick { font-size: 15px; line-height: 1.6; margin-bottom: 8px; list-style: none; padding: 0; }
+ul.clean { padding: 0; margin: 0; }
+li.tick::before { content: "— "; color: var(--ink-3); }
+table.duo { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.duo th, table.duo td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+table.duo th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+pre.code {
+  background: var(--ink); color: #FAFAFA; border-radius: 12px;
+  padding: 18px; font-family: "JetBrains Mono", monospace; font-size: 13px;
+  overflow-x: auto; line-height: 1.6; position: relative;
+}
+pre.code button {
+  position: absolute; top: 10px; right: 10px;
+  background: transparent; color: #FAFAFA; border: 1px solid #404040;
+  border-radius: 8px; padding: 5px 12px; font-size: 12px; cursor: pointer;
+}
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.panel { border: 1px solid var(--hairline); border-radius: 12px; padding: 18px; }
+.panel h3 { font-size: 15px; margin: 0 0 6px; }
+.panel p { font-size: 13px; color: var(--ink-2); margin: 0; line-height: 1.5; }
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.tier { border: 1px solid var(--hairline); border-radius: 12px; padding: 20px; }
+.tier.hot { background: var(--ink); color: #fff; border-color: var(--ink); }
+.tier.hot p { color: #D4D4D4; }
+.tier h3 { margin: 0 0 4px; font-size: 16px; }
+.tier .amt { font-family: "Space Grotesk", sans-serif; font-size: 28px; font-weight: 700; margin: 6px 0; }
+.tier p { font-size: 13px; color: var(--ink-2); margin: 0 0 14px; }
+footer { border-top: 1px solid var(--hairline); padding: 28px 0 64px; font-size: 13px; color: var(--ink-3); }
+footer a { color: var(--ink-2); }
+.rise { opacity: 0; transform: translateY(14px); transition: opacity var(--m-standard) var(--ease-out), transform var(--m-standard) var(--ease-out); }
+.rise.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .rise { opacity: 1; transform: none; transition: none; } }
