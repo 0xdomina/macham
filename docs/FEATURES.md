@@ -42,8 +42,11 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 - Buyer widget snippet (`Assistant` bubble per `MASCOT.md`) + mascot
   config (tiers, tone mapping).
 - Multi-supplier RFQ broadcast, CPQ-style approval chains, shipping-terms
-  negotiation (Incoterms, split shipments), Rialo audit anchoring,
-  browser fallback lane, seller/buyer onboarding flows, demo video script.
+  negotiation (Incoterms, split shipments), browser fallback lane,
+  seller/buyer onboarding flows, demo video script.
+- Budget-guard contract on Rialo testnet (cap plus allowlist plus timer
+  refund). Audit trail ships in `src/settlement/rialo.ts`. Verify timers
+  on testnet before claiming guard behavior.
 
 ## Anti-scope (do NOT build)
 

@@ -23,7 +23,7 @@ gaps — verify before building on them.
 ## Rialo L1 (verified 2026-10-02, subagent deep-pass)
 
 - DevNet public via Playground (Google sign-in, faucet, 4 demo apps);
-  testnet forming; **mainnet not launched**; `mainnet.rialo.io` constant
+  testnet live (see 2026-10-03 update below); **mainnet not launched**; `mainnet.rialo.io` constant
   is not a usable endpoint.
 - Buildable today: append-only audit trail + budget-guard program
   (cap + allowlist + timer refund) via `@rialo/ts-cdk`, RISC-V/PolkaVM
@@ -34,6 +34,40 @@ gaps — verify before building on them.
   via CDK, not ethers/viem.
 - Sources: rialo.io/for-devs, docs.rialo.io, learn.rialo.io tutorials,
   docs.rs rialo crates, npm @rialo/* packages, SubzeroLabs/rialo-examples.
+
+### Rialo testnet update (verified 2026-10-03, web pass)
+
+- Verdict: testnet is live. Mainnet is not launched. The claim
+  "testnet is live" checks out for testnet, not mainnet.
+- Access steps today: sign in at playground.rialo.io (Google), open the
+  Account tab, click "Request devnet $RIALO". One login covers the app
+  catalog (Meridian, Guarded Vault, Ermac, Project 1337). Faucet tokens
+  have no value and cannot move to exchanges.
+- Programmatic path: `requestAirdrop` works on devnet and testnet only.
+  Testnet RPC is `https://testnet.rialo.io:4101` (`URL_TESTNET`,
+  `RIALO_TESTNET_CHAIN`, `getDefaultRialoClientConfig("testnet")` in
+  `@rialo/ts-cdk` 0.18.1). Devnet is `https://devnet.rialo.io:4101`.
+  The mainnet constant is not a usable endpoint.
+- Explorer: testnet.rialoscan.org reads testnet.rialo.io directly (node
+  0.20.0-alpha.0 at check time). No indexer. rialoscan.org states
+  mainnet is not live.
+- Provably live surface (CDK documented): transfers
+  (`transferInstruction` plus `sendTransaction`), program deployment
+  (`ProgramDeployment`: LoaderV4 default, RiscV, RexWasmV1), history
+  reads (`getSignaturesForAddress`, `getTransaction`), fee and rent
+  estimates, TEE secret sharing key fetch. Macham audit anchoring in
+  `src/settlement/rialo.ts` uses transfers plus memo memos only.
+- Documented but not yet proven inside Macham: timer driven
+  subscriptions (`getSubscription`, `getTriggeredTransactions`, REX
+  registry) and native webcalls with `AFTER wait until` resume. Verify
+  on testnet before claiming budget-guard behavior.
+- Roadmap only: mainnet (target 2026 per press), any token or airdrop
+  (no ticker or tokenomics announced, points program only), EVM deploy
+  (outbound REX only today), delivery or quality proofs (never claim).
+- Sources: npm @rialo/ts-cdk 0.18.1 readme, testnet.rialoscan.org,
+  rialoscan.org, learn.rialo.io async tutorial, agents.rialo.io,
+  docs.rs rialo-cdk 0.11.2, KuCoin and HTX testnet notes May 2026,
+  Bitrue guide Sep 2026, airdrops.io review Sep 2026.
 
 ## PayPal hackathon (verified 2026-10-02, web search)
 
@@ -65,8 +99,9 @@ gaps — verify before building on them.
   a production story. Trial data deletes after 30d.
 - **Astropods**: blueprint registry + deploy/governance; keep agent
   logic portable regardless.
-- **Skyvern**: AGPL — adapt the `page.act` pattern, self-host or Cloud
-  free 5k credits. Watch copyleft before forking commercially.
+- **Skyvern**: AGPL upstream, but the author granted direct permission
+  to reuse any part (attribute + pin the commit on use). `page.act`
+  fallback lane stays API-last regardless.
 - **Voice**: prototype Gradbot (50-line loop, trial credits), ship
   LiveKit (free 1000 agent-min/mo).
 - TBD (verify before spending): exact sponsor-bonus thresholds per
