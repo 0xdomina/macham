@@ -2,17 +2,15 @@ import "./style.css"
 
 const root = document.getElementById("app")!
 
-const SNIPPET = `npm i macham
-
-import { mountAssistant, groqProvider } from "macham"
-import { myStore } from "./my-store"
-
-mountAssistant(document.body, {
-  store: myStore,
-  brain: groqProvider(process.env.GROQ_API_KEY!),
-  tenantId: "my-store",
-  identity: { name: "Ada" },
-})`;
+const SNIPPET = `<script src="https://cdn.macham.io/macham.js" data-key="mch_live_..." defer><\/script>
+<script>
+  Macham.init({
+    store: myStore,
+    brain: myBrain,
+    tenantId: "my-store",
+    identity: { name: "Ada" },
+  })
+<\/script>`;
 
 root.innerHTML = `
 <nav class="top"><div class="wrap">

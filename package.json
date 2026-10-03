@@ -11,12 +11,14 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "build:loader": "esbuild src/loader.ts --bundle --minify --format=iife --global-name=Macham --outfile=dist-loader/macham.js --target=es2020",
     "typecheck": "tsc --noEmit",
     "test": "node --test \"./test/*.mjs\"",
     "smoke": "npm run build && node ./smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
+    "esbuild": "^0.28.2",
     "typescript": "^5.6.0"
   },
   "dependencies": {

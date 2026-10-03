@@ -29,6 +29,23 @@
 Two heads, one protocol between them, settlement through real rails.
 Assistants attach to seams, never to stores.
 
+## Settlement (verified 2026-10-03)
+
+One compliant model: **we are the merchant of record.** Guest buyers pay
+by card on our checkout (PayPal ACDC hosted fields, no PayPal account
+needed); sellers get paid out via Hyperwallet bank transfer after KYC.
+No headless purchasing on third-party sites, no credential injection,
+no pooled cards — marketplace ToS, card-network rules, and
+money-transmitter law all forbid the proxy pattern, and balance-backed
+virtual cards do not exist as an API (PayPal Key died in 2022).
+
+- Take: Orders v2 create → approve → authorize → capture-within-tolerance.
+  Charge USD (no NGN presentment). Verve-only cards decline — ask for
+  Visa/Mastercard co-badged.
+- Pay out: Hyperwallet bank transfer (NG = wire, days not minutes,
+  KYC review first time). Batch small payouts: the flat fee dominates.
+- Refunds: reversal lines first, new transfer second, both verified.
+
 ## Seams (already scaffolded)
 
 - `StoreAdapter` (`src/adapters/types.ts`): list/get/search/categories.
@@ -44,9 +61,9 @@ Assistants attach to seams, never to stores.
 2. **Search lane.** Self-hosted vector search for semantic inventory and
    negotiation history. Elastic Docker is free; pgvector/Qdrant are valid
    substitutes at small scale.
-3. **Browser lane (fallback only).** Stealth headless + CAPTCHA solving where
-   no API exists (Kernel, or self-hosted Skyvern pattern). Escalate here on
-   API 404/422/extraction failure — never as the first resort.
+3. **Browser lane (read-only discovery only).** Public product pages on
+   consenting stores, never credential entry, never third-party checkout.
+   Escalate here on API 404/422/extraction failure — never as first resort.
 4. **Voice lane.** Browser mic → STT → intent → TTS summary. Prototype on a
    lightweight loop, ship on a production loop (LiveKit-class).
 

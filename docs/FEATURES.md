@@ -59,3 +59,6 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 - AI-decided approval routing (policy code decides; AI summarizes).
 - Mainnet money, EVM redeploys, or delivery-proof claims on Rialo.
 - Bryntum unless a scored timeline UI requires it (license cost).
+- Headless proxy purchasing on third-party stores, credential injection
+  into foreign checkouts, pooled/virtual cards from balances. ToS breach,
+  network breach, unlicensed transmission in three regimes.
