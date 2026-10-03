@@ -1,59 +1,71 @@
 # Macham
 
-Agentic commerce for any store. Shoppers talk. Macham understands,
-negotiates inside your rules, and settles through PayPal — with a
-Merchant engine on the seller's end and a Buyer proxy on the shopper's.
+Every store gets an assistant. Every shopper gets answers.
 
-## Partner stack (how judges see best use)
+A shopper types "warm jackets under ₦50,000". Macham finds them across
+real catalogs, compares prices, proposes the bag, and settles through
+PayPal. Sellers get the same brain for listings, pricing, and stock
+questions. One snippet drops it into any store.
 
-| Partner | Function in Macham |
+## See it work (60 seconds)
+
+```bash
+cd demo && npm install && npm run dev
+```
+
+Open the page. Search a product. Ask the chat. Approve a proposal.
+Watch the ledger record it. No account, no keys, no setup.
+
+## What it does
+
+- **Shoppers:** search, compare, cart proposals, order tracking, voice
+  input. Numbers always come from live catalogs, never invented.
+- **Sellers:** listing writer, price advisor, insights, accounting
+  digest, marketing ideas, daily brief. Aggregates in, guidance out.
+- **Checkout:** quote, approve, authorize, capture within tolerance,
+  receipt, refund path. Outside tolerance voids and re-quotes.
+  Capture stays within tolerance or re-quotes. Refunds return to the
+  verified payer.
+
+## How it stays honest
+
+- Fixed prices never get haggled. Negotiation lives in bulk tiers,
+  clearance, and shipping — inside merchant guardrails, every
+  concession logged.
+- AI proposes. Humans approve. Money moves on rails, not on words.
+- Platforms never see each other. Tenants, users, and histories are
+  partitioned by construction and proven by tests.
+
+## Built with
+
+| Layer | Choice |
 |---|---|
-| PayPal Orders v2 + Braintree | Settlement. Quote → create → approve → authorize → capture-within-tolerance → receipt + refund path. Sandbox-first. |
-| PayPal Agent Toolkit / MCP | Agent-native order, refund, dispute, invoice calls beside the REST rail. |
-| APIMatic | Publishes our contract as LLM context; we build with PayPal's plugin. No stale-doc hallucinations. |
-| Channel3 | Catalog enrichment: search, lookup, variant re-resolution across retailers. Server key only, never the browser. |
-| Elastic | Semantic inventory + negotiation-history search. Self-hosted Docker for builds. |
-| AG Grid Community | Transaction ledger + approval queue tables. MIT, no Enterprise features. |
-| Postman | Collections are the contract artifact: every rail call runnable, mocked, and tested. Fork link in repo. |
-| Kernel | Fallback lane only: stealth browsing where no API exists. APIs first, always. |
-| Astropods | Blueprint target for deploy and governance. Agent logic stays portable. |
-| Skyvern pattern | `page.act` fallback semantics adapted, self-hosted. No fork, no copyleft in tree. |
-| Voice | Browser mic → intent → spoken summary. Prototype loop in-repo. |
-| Bryntum | Trial builds only. Ships replaced by open-source timeline before submission. |
+| Payments | PayPal Orders v2 (sandbox-first), Agent Toolkit patterns |
+| Catalog | Channel3 API, server key only |
+| Tables | AG Grid Community |
+| Contracts | Postman collections with mocks |
+| Voice | Browser speech APIs, zero vendors |
 
-## Layout
+## Next
 
-- `src/types.ts` — shared commerce shapes. Assistants speak Macham only.
-- `src/adapters/` — the `StoreAdapter` seam plus a runnable mock store.
-- `src/providers/` — the `AIProvider` seam, router with failover, mock double.
-- `src/safety/` — harness: registry, contracts, PII scrub, proposal-only effects.
-- `src/tenancy/` — explicit tenant scope, namespaced stores.
-- `src/negotiation/` — tiers, RFQ lifecycle, guardrails.
-- `src/seller/` — listing, pricing, insights, accounting, marketing, brief.
-- `src/buyer/` — intent, search/compare, cart proposals, threaded chat.
-- `src/assistant/` — identity: name, mascot tiers, tone.
-- `src/rails/` — settlement rails (PayPal live, others stubbed).
-- `src/catalog/` — enrichment lanes (Channel3 live, others stubbed).
-- `demo/` — runnable storefront: chat, ledger, approvals, voice.
-- `postman/` — contract collection with mocks.
-- `docs/` — architecture, standards, feature map, research, keys, mascot, landing, integration.
+Live sandbox money loop on video. APIMatic plugin from the contract.
+Elastic lane when a store needs semantic search. Astropods blueprint
+for deploy. Browser lane only where APIs don't exist.
 
-## Use
+## Status
+
+Live: SDK seams, negotiation engine, seller caps, buyer proxy, PayPal
+rail, Channel3 lane, demo app, 47 green tests. Live-money proof runs
+the moment sandbox keys land — the code paths wait, nothing is stubbed
+around them.
+
+Next: sandbox money loop on video, pilot sellers, public launch.
+
+## Integrate (10 minutes)
 
 ```ts
 import { MockStoreAdapter, groqProvider } from "macham"
-
-const store = new MockStoreAdapter()
-const brain = groqProvider(process.env.GROQ_API_KEY!)
-const products = await store.listProducts({ query: "tee" })
 ```
 
-```bash
-npm install
-npm test
-```
-
-## Rules
-
-`docs/STANDARDS.md` is load-bearing. Tests green before every commit.
-Fail-closed money. Secrets in env only. Copy standard on all strings.
+Full guide: `docs/INTEGRATION.md`. Rules: `docs/STANDARDS.md`.
+Map: `docs/FEATURES.md`. Evidence: `docs/RESEARCH.md`.
