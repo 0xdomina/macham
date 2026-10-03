@@ -1,4 +1,4 @@
-import { Harness } from "../safety/harness.js"
+import { Harness, type Contract } from "../safety/harness.js"
 
 // Listing writer: rough seller notes become a publish-ready listing.
 // Structured output, Zod-style contract, zero platform coupling — the
@@ -19,7 +19,7 @@ export type Listing = {
 
 export const LISTING_CAPABILITY = "listing"
 
-export const listingContract = {
+export const listingContract: Contract = {
   type: "object",
   required: ["title", "description", "tags"],
   fields: {
@@ -29,7 +29,7 @@ export const listingContract = {
     seo_title: { type: "string", maxLength: 70 },
     seo_description: { type: "string", maxLength: 160 },
   },
-} as const
+}
 
 export async function writeListing(
   harness: Harness,
@@ -46,3 +46,4 @@ export async function writeListing(
     user: `Category: ${input.category ?? "general"}\nNotes: ${notes}`,
   }))
 }
+

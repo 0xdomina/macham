@@ -1,4 +1,4 @@
-import { Harness } from "../safety/harness.js"
+import { Harness, type Contract } from "../safety/harness.js"
 
 // Insights Q&A: plain questions over injected store data. Grounding rule:
 // data-only JSON in, sourced answer out. Unanswerable means saying so.
@@ -13,14 +13,14 @@ export type StoreSnapshot = {
 
 export const INSIGHTS_CAPABILITY = "insights"
 
-export const insightsContract = {
+export const insightsContract: Contract = {
   type: "object",
   required: ["answer"],
   fields: {
     answer: { type: "string", minLength: 10, maxLength: 1000 },
     unanswerable: { type: "boolean" },
   },
-} as const
+}
 
 export type InsightsAnswer = {
   answer: string
@@ -44,3 +44,4 @@ export async function askInsights(
     user: `Snapshot: ${data}\nQuestion: ${question}`,
   }))
 }
+

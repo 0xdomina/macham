@@ -25,16 +25,15 @@ export const myStore: StoreAdapter = {
 
 ## C. Show the assistant
 
-```tsx
-import { Assistant } from "macham/widget"
-import { groqProvider } from "macham"
-import { myStore } from "./my-store"
+```ts
+import { mountAssistant } from "macham"
 
-<Assistant
-  store={myStore}
-  brain={groqProvider(process.env.GROQ_API_KEY!)}
-  mascot="beam"
-/>
+mountAssistant(document.body, {
+  store: myStore,
+  brain: groqProvider(process.env.GROQ_API_KEY!),
+  tenantId: "my-store",
+  identity: { name: "Ada" },
+})
 ```
 
 A chat bubble appears bottom-right. Shoppers ask, approve carts, get

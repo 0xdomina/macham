@@ -1,4 +1,4 @@
-import { Harness } from "../safety/harness.js"
+import { Harness, type Contract } from "../safety/harness.js"
 
 // Pricing advisor: suggested, floor, and ceiling prices from anonymized
 // market aggregates the caller supplies. Never competitor rows, never
@@ -27,7 +27,7 @@ export type PricingAdvice = {
 
 export const PRICING_CAPABILITY = "pricing"
 
-export const pricingContract = {
+export const pricingContract: Contract = {
   type: "object",
   required: ["suggestedMinor", "floorMinor", "ceilingMinor", "reasoning"],
   fields: {
@@ -35,10 +35,9 @@ export const pricingContract = {
     floorMinor: { type: "number", min: 1 },
     ceilingMinor: { type: "number", min: 1 },
     reasoning: { type: "string", minLength: 10, maxLength: 500 },
-  },
-} as const
-
-export async function advisePricing(
+    },
+};
+export async function advisePricing(
   harness: Harness,
   input: PricingInput
 ): Promise<PricingAdvice> {
@@ -78,3 +77,5 @@ export async function advisePricing(
   const suggested = Math.min(Math.max(out.suggestedMinor, floor), ceiling)
   return { ...out, floorMinor: floor, ceilingMinor: ceiling, suggestedMinor: suggested }
 }
+
+

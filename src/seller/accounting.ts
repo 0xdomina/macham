@@ -1,4 +1,4 @@
-import { Harness } from "../safety/harness.js"
+import { Harness, type Contract } from "../safety/harness.js"
 
 // Accounting digest: caller-computed aggregates become a plain-language
 // summary. Deterministic totals, model narrates. The money math never
@@ -14,15 +14,14 @@ export type LedgerAggregates = {
 
 export const ACCOUNTING_CAPABILITY = "accounting"
 
-export const accountingContract = {
+export const accountingContract: Contract = {
   type: "object",
   required: ["digest"],
   fields: {
     digest: { type: "string", minLength: 20, maxLength: 1000 },
-  },
-} as const
-
-export async function writeAccountingDigest(
+    },
+};
+export async function writeAccountingDigest(
   harness: Harness,
   input: { aggregates: LedgerAggregates }
 ): Promise<{ digest: string }> {
@@ -50,3 +49,5 @@ export async function writeAccountingDigest(
     }`,
   }))
 }
+
+

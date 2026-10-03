@@ -1,4 +1,4 @@
-import { Harness } from "../safety/harness.js"
+import { Harness, type Contract } from "../safety/harness.js"
 import type { StoreAdapter } from "../adapters/types.js"
 import type { Product } from "../types.js"
 import { classifyBuyerIntent, extractKeywords } from "./intent.js"
@@ -35,13 +35,13 @@ export async function searchProducts(
   }))
 }
 
-export const searchContract = {
+export const searchContract: Contract = {
   type: "object",
   required: ["summary"],
   fields: {
     summary: { type: "string", minLength: 10, maxLength: 600 },
   },
-} as const
+}
 
 export async function narrateSearch(
   harness: Harness,
@@ -91,7 +91,7 @@ export type CartProposal =
   | { action: "remove"; productId: string; title: string }
   | { action: "none"; reason: string }
 
-export const cartProposalContract = {
+export const cartProposalContract: Contract = {
   type: "object",
   required: ["action"],
   fields: {
@@ -101,7 +101,7 @@ export const cartProposalContract = {
     qty: { type: "number", min: 1, max: 99 },
     reason: { type: "string", maxLength: 200 },
   },
-} as const
+}
 
 // Proposal, never mutation: the host applies it through its own cart rail
 // after the human approves. Unknown products refuse.

@@ -1,4 +1,4 @@
-import { Harness } from "../safety/harness.js"
+import { Harness, type Contract } from "../safety/harness.js"
 
 // Marketing coach: low-budget promo and bundle ideas from the caller's
 // real catalog. Suggestions reference actual product ids — never invented
@@ -12,7 +12,7 @@ export type CatalogItem = {
 
 export const MARKETING_CAPABILITY = "marketing"
 
-export const marketingContract = {
+export const marketingContract: Contract = {
   type: "object",
   required: ["ideas"],
   fields: {
@@ -34,7 +34,7 @@ export const marketingContract = {
       },
     },
   },
-} as const
+}
 
 export type MarketingIdea = {
   title: string
@@ -73,3 +73,4 @@ export async function coachMarketing(
   }
   return out
 }
+

@@ -1,4 +1,4 @@
-import { Harness } from "../safety/harness.js"
+import { Harness, type Contract } from "../safety/harness.js"
 
 // Daily brief: deterministic numbers in, short narrative out. The caller
 // computes everything (revenue, margin, movers); the model only narrates.
@@ -14,15 +14,14 @@ export type BriefNumbers = {
 
 export const BRIEF_CAPABILITY = "brief"
 
-export const briefContract = {
+export const briefContract: Contract = {
   type: "object",
   required: ["brief"],
   fields: {
     brief: { type: "string", minLength: 40, maxLength: 800 },
-  },
-} as const
-
-export async function writeBrief(
+    },
+};
+export async function writeBrief(
   harness: Harness,
   input: { numbers: BriefNumbers }
 ): Promise<{ brief: string }> {
@@ -74,3 +73,5 @@ export function rankOpportunities(items: OpportunityInput[]): RankedOpportunity[
   })
   return ranked.sort((a, b) => b.score - a.score)
 }
+
+

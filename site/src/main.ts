@@ -4,15 +4,15 @@ const root = document.getElementById("app")!
 
 const SNIPPET = `npm i macham
 
-import { Assistant } from "macham/widget"
-import { groqProvider } from "macham"
+import { mountAssistant, groqProvider } from "macham"
 import { myStore } from "./my-store"
 
-<Assistant
-  store={myStore}
-  brain={groqProvider(process.env.GROQ_API_KEY!)}
-  mascot="beam"
-/>`;
+mountAssistant(document.body, {
+  store: myStore,
+  brain: groqProvider(process.env.GROQ_API_KEY!),
+  tenantId: "my-store",
+  identity: { name: "Ada" },
+})`;
 
 root.innerHTML = `
 <nav class="top"><div class="wrap">
