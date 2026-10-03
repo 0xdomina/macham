@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { tenantIdOf, type TenantContext } from "../tenancy/context.js"
 
 // Request-for-quote lifecycle. Buyer posts intent; seller side counters;
@@ -58,7 +59,7 @@ export function createRequest(
   const ttl = input.ttlHours ?? 48
   if (!(ttl > 0) || ttl > 24 * 14) throw new Error("Expiry must be within 14 days.")
   return {
-    id: `q_${Math.random().toString(36).slice(2, 10)}`,
+    id: `q_${randomUUID().replace(/-/g, "").slice(0, 12)}`,
     sku,
     quantity: input.quantity,
     shipTo: input.shipTo,

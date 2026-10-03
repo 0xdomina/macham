@@ -8,7 +8,19 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 - Seams: `StoreAdapter`, `AIProvider`, shared types, mock store,
   OpenAI-compatible client (Groq, DeepSeek). Tests green.
 - Doctrine: `ARCHITECTURE.md`, `STANDARDS.md`, `UI_SYSTEM.md`,
-  `AI_FEATURES.md`, `RESEARCH.md`.
+  `AI_FEATURES.md`, `RESEARCH.md`, `KEYS.md`, `MASCOT.md`, `LANDING.md`,
+  `INTEGRATION.md`.
+- Tenancy wall: context, namespaced stores, per-tenant router, harness
+  tenant gate. Cross-tenant reads miss by construction (tested).
+- Negotiation: bulk tiers, RFQ lifecycle, guardrails (floors, MAP,
+  approvals, audit).
+- Seller caps: listing, pricing, insights, accounting, marketing,
+  brief, deterministic ranker.
+- Buyer proxy: intent, search/compare, cart proposals, threaded chat.
+- Platform: `mch_` keys, billing gates, single-line loader, embeddable
+  widget, PayPal rail, Channel3 lane, Rialo audit layer.
+- Demo app, marketing site, Postman collection, submission checklist.
+- 56/56 tests green. No fabricated data anywhere.
 
 ## NEXT (in order)
 
@@ -39,14 +51,30 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 
 ## LATER
 
-- Buyer widget snippet (`Assistant` bubble per `MASCOT.md`) + mascot
-  config (tiers, tone mapping).
 - Multi-supplier RFQ broadcast, CPQ-style approval chains, shipping-terms
   negotiation (Incoterms, split shipments), browser fallback lane,
   seller/buyer onboarding flows, demo video script.
 - Budget-guard contract on Rialo testnet (cap plus allowlist plus timer
   refund). Audit trail ships in `src/settlement/rialo.ts`. Verify timers
   on testnet before claiming guard behavior.
+
+## Hardening sprint (production-grade, in order)
+
+1. Sandbox keys → live PayPal loop on video.
+2. Postgres `TenantStore` + `KeyStore` (rotation with grace, revocation
+   list) + scope check in `Harness.run`.
+3. User JWT mint/verify (short expiry, deny-list) or cut the claim.
+4. Per-key rate limiter (429s) + retry-with-jitter on 429/5xx.
+5. Request IDs, structured logs, persisted audit, `/health`.
+6. CHANGELOG + versioning policy.
+
+## Non-integrated store access (mobile-first, no scraping, no auto-buy)
+
+Stores that never integrate are reached, never entered: native Share
+(iOS extension + Android intent) plus paste-box plus affiliate-wrapped
+buy links. No accessibility automation, no credential injection, no
+Universal-Link hijacking. PWA share-target is an Android enhancement
+only. Monetize via affiliate commissions on the handoff.
 
 ## Anti-scope (do NOT build)
 

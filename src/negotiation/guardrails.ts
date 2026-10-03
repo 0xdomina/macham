@@ -111,6 +111,7 @@ function entry(
 export class GuardrailStore {
   private readonly policies = new Map<string, GuardrailPolicy>()
   private readonly audit: AuditEntry[] = []
+  private static readonly AUDIT_CAP = 1000
 
   private key(ctx: TenantContext): string {
     return tenantIdOf(ctx)
@@ -134,6 +135,7 @@ export class GuardrailStore {
     const verdict = judge(ctx, policy, proposal)
     const record = entry(ctx, proposal, verdict)
     this.audit.push(record)
+    while (this.audit.length > GuardrailStore.AUDIT_CAP) this.audit.shift()
     return { verdict, logged: record }
   }
 
