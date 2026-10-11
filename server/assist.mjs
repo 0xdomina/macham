@@ -152,6 +152,13 @@ function isBlockedOctets(o) {
   if (o[0] === 192 && o[1] === 168) return true
   if (o[0] === 169 && o[1] === 254) return true
   if (o[0] === 172 && o[1] >= 16 && o[1] <= 31) return true
+  if (o[0] === 100 && o[1] >= 64 && o[1] <= 127) return true
+  if (o[0] === 198 && (o[1] === 18 || o[1] === 19)) return true
+  if (o[0] === 192 && o[1] === 0 && o[2] === 2) return true
+  if (o[0] === 198 && o[1] === 51 && o[2] === 100) return true
+  if (o[0] === 203 && o[1] === 0 && o[2] === 113) return true
+  if (o[0] >= 224 && o[0] <= 239) return true
+  if (o[0] >= 240) return true
   return false
 }
 
@@ -192,9 +199,21 @@ async function originResolvesPublic(rawOrigin) {
   }
 }
 
-// Redirect guard: manual redirects, every hop re-validated. A 302 to a
+// Redirect + induction guard: manual redirects, every hop re-validated,
+// and every fetched input validated up front (sitemap/page URLs induced by
+// attacker content die here, not inside a following fetcher). A 302 to a
 // private address dies here instead of inside a following fetcher.
+// Note: all IPv6 literals refuse, including public ones. DNS names with
+// AAAA records pass. Safe direction, documented.
 async function guardedFetch(input, init, hops = 3) {
+  const target = typeof input === "string" ? input : input.url
+  if (!publicStoreOrigin(target)) {
+    throw new Error("Fetch not allowed.")
+  }
+  const origin = new URL(target).origin
+  if (!(await originResolvesPublic(origin))) {
+    throw new Error("Fetch not allowed.")
+  }
   const res = await fetch(input, { ...(init ?? {}), redirect: "manual" })
   const location = res.headers.get("location")
   if (
