@@ -1,5 +1,6 @@
 import { Harness } from "../safety/harness.js"
 import type { StoreAdapter } from "../adapters/types.js"
+import type { Product } from "../types.js"
 import {
   classifyBuyerIntent,
   type BuyerIntent,
@@ -19,6 +20,9 @@ export type ChatReply = {
   intent: BuyerIntent
   text: string
   proposal?: { action: string; productId?: string; title?: string; qty?: number }
+  // The catalog rows behind a search/compare answer, so the widget can draw
+  // product cards with images. Numbers still come only from the adapter.
+  products?: Product[]
 }
 
 const MAX_HISTORY = 40
@@ -71,7 +75,7 @@ export async function chatTurn(
         ? await narrateCompare(harness, text, hits)
         : await narrateSearch(harness, text, hits)
     return {
-      reply: { intent, text: summary },
+      reply: { intent, text: summary, products: hits.map((hit) => hit.product) },
       history: [...log, { role: "assistant", text: summary } as ChatTurn],
     }
   }

@@ -1,14 +1,13 @@
 import test from "node:test"
 import assert from "node:assert/strict"
+import { PLANS, checkLimits } from "../dist/index.js"
 import {
-  PLANS,
-  checkLimits,
   fingerprintOf,
   keyIdForLogs,
   mintKey,
   parseKey,
   verifyKey,
-} from "../dist/index.js"
+} from "../dist/auth/keys.js"
 
 test("keys mint, parse, verify, and redact", () => {
   const { record, secret } = mintKey({ env: "live", scopes: { orders: true } })

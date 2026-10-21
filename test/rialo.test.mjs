@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { appendAuditEvent, isRialoAuditConfigured, readAuditEvents } from "../dist/index.js"
+import { appendAuditEvent, decodeAuditMemo, isRialoAuditConfigured, readAuditEvents } from "../dist/settlement/rialo.js"
 
 function withEnv(vars, fn) {
   const saved = {}
@@ -69,6 +69,14 @@ test("event-shape validation rejects bad input without throwing", async () => {
     assert.deepEqual(await readAuditEvents("   "), [])
     assert.deepEqual(await readAuditEvents(undefined), [])
   })
+})
+
+test("memo decoder reads base58, falls back to base64, refuses garbage", async () => {
+  assert.equal(decodeAuditMemo("AYJnJj3pnyHaH1uzTWc3wr"), 'MACHAM/1:{"v":1}')
+  assert.equal(decodeAuditMemo("TUFDSEFNLzE6eyJ2IjoxfQ=="), 'MACHAM/1:{"v":1}')
+  assert.equal(decodeAuditMemo(""), null)
+  assert.equal(decodeAuditMemo(null), null)
+  assert.equal(decodeAuditMemo("0OIl"), null)
 })
 
 test("oversized ref fails closed without network use", async () => {

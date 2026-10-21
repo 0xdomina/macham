@@ -1,0 +1,22 @@
+# Elastic single-node for the Macham semantic lane.
+# Local: docker compose -f elastic/docker-compose.yml up -d
+# InstaCloud: same image as a compute service with a persistent volume,
+# ES_JAVA_OPTS=-Xms512m -Xmx512m, single port 9200 to the gateway.
+# Gateway reads ELASTIC_URL + ELASTIC_KEY (an Elastic API key). ELASTIC_PASSWORD
+# above is only the bootstrap superuser password for the node itself. Never send
+# either to the browser — server-side only.
+services:
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+volumes:
+  esdata:

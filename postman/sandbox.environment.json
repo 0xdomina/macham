@@ -1,0 +1,12 @@
+{
+  "name": "Macham sandbox",
+  "values": [
+    { "key": "assist_base", "value": "http://localhost:8787", "enabled": true },
+    { "key": "MACHAM_API_KEY", "value": "mch_test_REPLACE_ME", "enabled": true },
+    { "key": "paypal_base", "value": "https://api-m.sandbox.paypal.com", "enabled": true },
+    { "key": "PAYPAL_CLIENT_ID", "value": "REPLACE_ME", "enabled": true },
+    { "key": "PAYPAL_SECRET", "value": "REPLACE_ME", "enabled": true },
+    { "key": "channel3_base", "value": "https://api.trychannel3.com", "enabled": true },
+    { "key": "CHANNEL3_API_KEY", "value": "REPLACE_ME", "enabled": true }
+  ]
+}

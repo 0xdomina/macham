@@ -7,12 +7,15 @@
 - [x] Tests green (`npm test`), typecheck clean
 - [x] No secrets in tree (`.env` ignored; keys via env only)
 
-## Demo
+## Demo (widget via snippet)
 
-- [ ] Deploy demo/ to a public URL
-- [ ] Record <3 min YouTube: pain → live sandbox payment → ledger →
+- [ ] Deploy `server/assist.mjs` + build the snippet (`dist-loader/macham.js`) to a public URL
+- [ ] Record <3 min YouTube: pain → live sandbox payment → Rialo settlement proof →
       approval → roadmap
-- [ ] Sandbox credentials work from a fresh machine (document exact env)
+- [x] Sandbox credentials work from a fresh machine (exact env:
+  `PAYPAL_ENV=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`.
+  Verified 2026-10-03: OAuth 200, order CREATED, approve host
+  `www.sandbox.paypal.com`)
 
 ## Live proof (needs keys)
 
@@ -24,9 +27,9 @@
 ## Boxes to tick on camera
 
 - [ ] PayPal + AI money loop with receipt
-- [ ] APIMatic-built calls (cite plugin in README)
-- [ ] AG Grid ledger visible with live rows
-- [ ] Postman collection fork link in repo
+- [x] APIMatic-built calls (`apimatic/openapi.json`, cited in README)
+- [x] AG Grid ledger visible with live rows (demo `#/ledger`, device ledger)
+- [x] Postman collection fork link in repo (https://www.postman.com/domina9193-4264801/macham)
 - [ ] Render deploy URL in submission (credits box)
 - [ ] Kernel/EVC lane only if core loop is green first
 

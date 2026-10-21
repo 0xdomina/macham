@@ -69,6 +69,42 @@ test("capture refuses outside tolerance before any call", async () => {
   assert.equal(called, false)
 })
 
+test("authorize then capture the authorization id", async () => {
+  const rail = new PayPalRail({ clientId: "id", clientSecret: "sh" })
+  const fetch = stubFetch({
+    ...TOKEN,
+    "POST v2/checkout/orders/ORD-1/authorize": {
+      status: 201,
+      body: {
+        id: "ORD-1",
+        status: "COMPLETED",
+        purchase_units: [{ payments: { authorizations: [{ id: "AUTH-1", status: "CREATED" }] } }],
+      },
+    },
+    "POST v2/payments/authorizations/AUTH-1/capture": {
+      status: 201,
+      body: { id: "CAP-1", status: "COMPLETED" },
+    },
+  })
+  const auth = await rail.authorizeOrder("ORD-1", fetch)
+  assert.equal(auth.authorizationId, "AUTH-1")
+  const cap = await rail.captureAuthorization("AUTH-1", 2500, "USD", fetch)
+  assert.equal(cap.status, "COMPLETED")
+})
+
+test("void releases an authorization", async () => {
+  const rail = new PayPalRail({ clientId: "id", clientSecret: "sh" })
+  const fetch = stubFetch({
+    ...TOKEN,
+    "POST v2/payments/authorizations/AUTH-1/void": {
+      status: 204,
+      body: {},
+    },
+  })
+  const out = await rail.voidAuthorization("AUTH-1", fetch)
+  assert.deepEqual(out, {})
+})
+
 test("refund posts capture refund", async () => {
   const rail = new PayPalRail({ clientId: "id", clientSecret: "sh" })
   const fetch = stubFetch({

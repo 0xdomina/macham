@@ -1,7 +1,10 @@
 import type { AIProvider, ChatMessage, ChatResult } from "./types.js"
 
 // One client for every OpenAI-compatible chat API (Groq, DeepSeek, OpenAI,
-// and friends). Base URL + key + model choose the brain; nothing else moves.
+// and friends). SERVER-ONLY: model keys live on the Macham server, never in
+// merchant bundles. Merchants hold only their mch_ API key. Not exported
+// from the package root.
+
 export type OpenAICompatibleOptions = {
   name: string
   baseUrl: string
@@ -18,6 +21,9 @@ export class OpenAICompatibleProvider implements AIProvider {
   private readonly timeoutMs: number
 
   constructor(opts: OpenAICompatibleOptions) {
+    if (typeof window !== "undefined") {
+      throw new Error("Provider keys run server-side only.")
+    }
     if (!opts.apiKey) throw new Error(`${opts.name}: API key needed`)
     this.name = opts.name
     this.baseUrl = opts.baseUrl.replace(/\/$/, "")
@@ -51,7 +57,10 @@ export class OpenAICompatibleProvider implements AIProvider {
   }
 }
 
-export function groqProvider(apiKey: string, model = "llama-3.3-70b-versatile"): OpenAICompatibleProvider {
+// Default model verified live 2026-10-03. Groq retires ids without warning;
+// the gateway overrides via GROQ_MODEL. Never hardcode a dead id.
+
+export function groqProvider(apiKey: string, model = "qwen/qwen3.8-27b"): OpenAICompatibleProvider {
   return new OpenAICompatibleProvider({
     name: "groq",
     baseUrl: "https://api.groq.com/openai/v1",

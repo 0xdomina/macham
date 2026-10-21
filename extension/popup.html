@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  :root { --ink: #0A0A0A; --ink-2: #3A3A3A; --line: #E5E5E5; }
+  body { width: 300px; margin: 0; padding: 14px; font-family: Inter, system-ui, sans-serif; color: var(--ink); }
+  h1 { font-size: 14px; margin: 0 0 4px; }
+  p { font-size: 12px; color: var(--ink-2); margin: 0 0 10px; line-height: 1.5; }
+  input { width: 100%; box-sizing: border-box; font-size: 13px; border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; }
+  .row { display: flex; gap: 8px; margin-top: 10px; }
+  button { flex: 1; border-radius: 999px; border: 1px solid var(--line); background: #fff; padding: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  button.go { background: var(--ink); color: #fff; border-color: var(--ink); }
+  ul { list-style: none; padding: 0; margin: 10px 0 0; font-size: 12px; }
+  li { padding: 6px 0; border-top: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  li a { color: var(--ink-2); text-decoration: none; }
+  #err { font-size: 12px; color: #B3261E; margin-top: 8px; min-height: 16px; }
+</style>
+</head>
+<body>
+  <h1>Macham handoff</h1>
+  <p>Paste a product link from a store that never integrated. We find it. You buy there.</p>
+  <input id="url" type="url" placeholder="Paste product link" autocomplete="off" />
+  <div class="row">
+    <button class="go" id="ask">Ask Macham</button>
+    <button id="copy">Copy handoff</button>
+  </div>
+  <div id="err" aria-live="polite"></div>
+  <ul id="recent"></ul>
+  <script src="popup.js"></script>
+</body>
+</html>

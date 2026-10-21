@@ -61,15 +61,15 @@ test("harness runs a capability through its contract", async () => {
     brain,
     capabilities: [
       {
-        key: "listing",
+        key: "summarise",
         effects: "none",
         contract: { type: "object", required: ["title"], fields: { title: { type: "string" } } },
       },
     ],
   })
-  assert.ok(harness.has("listing"))
+  assert.ok(harness.has("summarise"))
   assert.ok(!harness.has("nope"))
-  const out = await harness.run("listing", () => ({
+  const out = await harness.run("summarise", () => ({
     system: "Write.",
     user: "write",
   }))

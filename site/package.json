@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:single": "node scripts/single.mjs",
     "preview": "vite preview"
   },
   "main": "index.js",
@@ -16,5 +17,8 @@
   "dependencies": {
     "typescript": "^7.0.2",
     "vite": "^6.4.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }

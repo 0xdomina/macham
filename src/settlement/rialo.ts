@@ -1,8 +1,17 @@
-// Rialo settlement audit trail (testnet).
+// Rialo settlement audit trail (devnet for free testing, testnet for judging).
 //
 // Dependency reason: @rialo/ts-cdk is the official Rialo client used to
-// anchor audit events. Free-tier path: testnet faucet and requestAirdrop.
-// No paid service involved.
+// anchor audit events. Free-tier path: programmatic requestAirdrop on
+// devnet/testnet over standard port 443 (the CDK default :4101 is blocked
+// on strict egress; override with RIALO_RPC_URL). No paid service involved.
+//
+// Append-only, best-effort event log. Each event is anchored in a network
+// transaction: a dust self-transfer plus a Memo-program instruction carrying
+// the event JSON. Verified on devnet 2026-10-03: transfer-only and
+// transfer-plus-memo land; memo data addressed to the system program does
+// NOT land (silently dropped). Reads scan the audit account history and
+// decode matching memos. RPC shapes are accepted in both camelCase (port
+// 443) and snake_case (CDK native) forms.
 //
 // Append-only, best-effort event log. Each event is anchored in a testnet
 // transaction: a dust self-transfer plus a memo instruction carrying the
@@ -13,7 +22,10 @@
 // work can never break settlement flows.
 //
 // Env (writes stay off until provisioned):
-//   RIALO_RPC_URL        Testnet RPC endpoint. Defaults to the CDK preset.
+//   RIALO_NETWORK        "devnet" for free faucet testing, "testnet" for the
+//                        judging path. Default "testnet". Flip freely: keys
+//                        are network-agnostic, no reprovisioning needed.
+//   RIALO_RPC_URL        Custom RPC endpoint. Defaults to the active preset.
 //   RIALO_AUDIT_ENABLED  "true" to write. Default false.
 //   RIALO_AUDIT_KEY      Base58 secret funding audit writes. Accepts the
 //                        32-byte seed or the 64-byte secret. Only the first
@@ -26,9 +38,9 @@ import {
   createRialoClient,
   Keypair,
   PublicKey,
+  RIALO_DEVNET_CHAIN,
   RIALO_TESTNET_CHAIN,
   Signature,
-  SYSTEM_PROGRAM_ID,
   TransactionBuilder,
   transferInstruction,
 } from "@rialo/ts-cdk"
@@ -60,6 +72,9 @@ const DUST_KELVIN = 1n
 const KIND_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/
 const MAX_REF_LENGTH = 160
 const MAX_ACTOR_LENGTH = 320
+// Memo program: the only vehicle that lands arbitrary bytes. Verified live
+// on devnet. Never address memo data to the system program (dropped).
+const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 
 const B58_DIGITS =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
@@ -132,9 +147,14 @@ function writeEnabled(): boolean {
   return raw === "true" || raw === "1"
 }
 
+function activeChain(): typeof RIALO_TESTNET_CHAIN {
+  const raw = (process.env.RIALO_NETWORK ?? "testnet").trim().toLowerCase()
+  return raw === "devnet" ? RIALO_DEVNET_CHAIN : RIALO_TESTNET_CHAIN
+}
+
 function rpcEndpoint(): string {
   const raw = process.env.RIALO_RPC_URL?.trim()
-  return raw ? raw : RIALO_TESTNET_CHAIN.rpcUrl
+  return raw ? raw : activeChain().rpcUrl
 }
 
 function operationTimeoutMs(): number {
@@ -144,7 +164,7 @@ function operationTimeoutMs(): number {
 
 function auditClient(): ReturnType<typeof createRialoClient> {
   return createRialoClient({
-    chain: { ...RIALO_TESTNET_CHAIN, rpcUrl: rpcEndpoint() },
+    chain: { ...activeChain(), rpcUrl: rpcEndpoint() },
     transport: { timeout: operationTimeoutMs() },
   })
 }
@@ -194,27 +214,57 @@ function encodeMemo(input: AuditEventInput): Uint8Array | null {
   }
 }
 
+/**
+ * Decode on-chain instruction data to memo text. Base58 first (the observed
+ * wire form), base64 as fallback. Pure and exported for offline tests.
+ * Returns null when the input decodes to nothing usable.
+ */
+export function decodeAuditMemo(data: unknown): string | null {
+  if (typeof data !== "string" || !data) return null
+  const attempts: Uint8Array[] = []
+  try {
+    attempts.push(decodeBase58(data))
+  } catch {
+    // Not base58. Fall through to base64.
+  }
+  if (!attempts.length && /^[A-Za-z0-9+/=_-]+$/.test(data)) {
+    try {
+      const raw = Buffer.from(data.replace(/-/g, "+").replace(/_/g, "/"), "base64")
+      if (raw.length) attempts.push(new Uint8Array(raw))
+    } catch {
+      // Not base64 either.
+    }
+  }
+  for (const bytes of attempts) {
+    if (!bytes.length || bytes.length > MAX_MEMO_BYTES + 64) continue
+    try {
+      const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes)
+      if (text) return text
+    } catch {
+      continue
+    }
+  }
+  return null
+}
+
 function matchMemo(
-  response: unknown,
+  details: unknown,
   ref: string,
   signature: string
 ): AuditEventRecord | null {
   try {
-    const root = asRecord(response)
+    const root = asRecord(details)
     if (!root) return null
-    if (asRecord(root.meta)?.err) return null
-    const instructions = asRecord(asRecord(root.transaction)?.message)?.instructions
+    // RPC speaks camelCase on 443, snake_case on native CDK ports. Take both.
+    const tx = asRecord(root.transaction) ?? asRecord(root.result)
+    const message = asRecord(tx?.message)
+    const instructions = message?.instructions ?? message?.compiledInstructions
     if (!Array.isArray(instructions)) return null
+    const meta = asRecord(root.meta)
+    if (meta?.err != null) return null
     for (const entry of instructions) {
-      const data = asRecord(entry)?.data
-      if (typeof data !== "string" || !data) continue
-      let text: string
-      try {
-        text = new TextDecoder().decode(decodeBase58(data))
-      } catch {
-        continue
-      }
-      if (!text.startsWith(MEMO_TAG)) continue
+      const text = decodeAuditMemo(asRecord(entry)?.data)
+      if (!text || !text.startsWith(MEMO_TAG)) continue
       let event: unknown
       try {
         event = JSON.parse(text.slice(MEMO_TAG.length)) as unknown
@@ -223,10 +273,12 @@ function matchMemo(
       }
       const body = asRecord(event)
       if (!body || body.ref !== ref) continue
-      const blockTime = asRecord(response)?.blockTime
+      const blockTime = root.block_time ?? root.blockTime
       return {
         signature,
-        ...(typeof blockTime === "bigint" ? { blockTime: Number(blockTime) } : {}),
+        ...(typeof blockTime === "number" || typeof blockTime === "bigint"
+          ? { blockTime: Number(blockTime) }
+          : {}),
         kind: typeof body.kind === "string" ? body.kind : "unknown",
         ref,
         actor: typeof body.actor === "string" ? body.actor : null,
@@ -258,6 +310,19 @@ function withCap<T>(task: Promise<T>, ms: number): Promise<T> {
   return Promise.race([task, guard]).finally(() => {
     if (timer !== undefined) clearTimeout(timer)
   })
+}
+
+/** Full transaction details over plain RPC. Never throws sensitive detail. */
+async function fetchTransactionDetails(signature: string, ms: number): Promise<unknown> {
+  const res = await fetch(rpcEndpoint(), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getTransaction", params: [{ signature }] }),
+    signal: AbortSignal.timeout(ms),
+  })
+  if (!res.ok) throw new Error("Audit read unavailable. Retry.")
+  const body = (await res.json()) as { result?: unknown }
+  return body.result ?? null
 }
 
 /** True when audit writes are enabled and a usable key is present. */
@@ -304,8 +369,8 @@ export async function appendAuditEvent(
         .setConfigHashPrefix(prefix)
         .addInstruction(transferInstruction(payer, payer, DUST_KELVIN))
         .addInstruction({
-          programId: PublicKey.fromString(SYSTEM_PROGRAM_ID),
-          accounts: [{ pubkey: payer, isSigner: true, isWritable: false }],
+          programId: PublicKey.fromString(MEMO_PROGRAM_ID),
+          accounts: [],
           data: memo,
         })
         .build()
@@ -346,13 +411,13 @@ export async function readAuditEvents(ref: string): Promise<AuditEventRecord[]> 
       )
       const out: AuditEventRecord[] = []
       for (const info of (history ?? []).slice(0, FETCH_LIMIT)) {
-        if (!info || info.err) continue
+        const signature = typeof info?.signature === "string" ? info.signature : null
+        if (!signature || info?.err != null) continue
         try {
-          const response = await withCap(
-            client.getTransaction(Signature.fromString(info.signature).toBytes()),
-            ms
-          )
-          const record = matchMemo(response, needle, info.signature)
+          // The CDK summary call omits instructions, so fetch full details
+          // over plain RPC (same endpoint, correct [{ signature }] shape).
+          const response = await withCap(fetchTransactionDetails(signature, ms), ms)
+          const record = matchMemo(response, needle, signature)
           if (record) out.push(record)
         } catch {
           continue

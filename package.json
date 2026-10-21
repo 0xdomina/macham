@@ -7,11 +7,13 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./dist/*": "./dist/*"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "build:loader": "esbuild src/loader.ts --bundle --minify --format=iife --global-name=Macham --outfile=dist-loader/macham.js --target=es2020",
+    "build:ext": "esbuild src/extension-content.ts --bundle --minify --format=iife --outfile=extension/content.js --target=chrome120",
     "typecheck": "tsc --noEmit",
     "test": "node --test \"./test/*.mjs\"",
     "smoke": "npm run build && node ./smoke.mjs"

@@ -7,59 +7,67 @@
                     │      Macham core        │
                     │  types + seams + rules  │
                     └────────────┬────────────┘
-                 ┌───────────────┴───────────────┐
-                 ▼                               ▼
-   ┌─────────────────────────┐     ┌─────────────────────────┐
-   │     Merchant engine     │     │      Buyer proxy        │
-   │ seller guardrails       │────▶│ natural-language intent │
-   │ bulk tiers, clearance,  │ sons│ vision/structured parse │
-   │ shipping terms, caps    │     │ micro-frontend or       │
-   │ deterministic approvals │     │ headless helper         │
-   └────────────┬────────────┘     └────────────┬────────────┘
-                │  negotiation protocol         │
-                └──────────────┬────────────────┘
-                               ▼
-                 ┌─────────────────────────┐
-                 │   settlement rails      │
-                 │ PayPal Orders v2 +      │
-                 │ capture / authorize     │
-                 └─────────────────────────┘
+                                 ▼
+                   ┌───────────────────────────┐
+                   │       Buyer proxy         │
+                   │ natural-language intent   │
+                   │ grounded search + compare │
+                   │ cart proposal (never      │
+                   │ mutates) → human approve  │
+                   └────────────┬──────────────┘
+                                │  store read
+                                ▼
+                   ┌───────────────────────────┐
+                   │   store-read lanes        │
+                   │ UniversalAdapter (keyless)│
+                   │ → Kernel (read-only)      │
+                   │ → Channel3 enrichment     │
+                   └────────────┬──────────────┘
+                                │  locked total
+                                ▼
+                   ┌───────────────────────────┐
+                   │   settlement rails        │
+                   │ PayPal Orders v2          │
+                   │ approve / authorize /     │
+                   │ capture-within-tolerance  │
+                   └───────────────────────────┘
 ```
 
-Two heads, one protocol between them, settlement through real rails.
-Assistants attach to seams, never to stores.
+One head. Macham is buyer-only: the store sets the price and Macham orders
+it — no negotiation, no seller console. Assistants attach to seams, never
+to stores.
 
 ## Settlement (verified 2026-10-03)
 
-One compliant model: **we are the merchant of record.** Guest buyers pay
-by card on our checkout (PayPal ACDC hosted fields, no PayPal account
-needed); sellers get paid out via Hyperwallet bank transfer after KYC.
-No headless purchasing on third-party sites, no credential injection,
-no pooled cards — marketplace ToS, card-network rules, and
-money-transmitter law all forbid the proxy pattern, and balance-backed
-virtual cards do not exist as an API (PayPal Key died in 2022).
+One compliant model: **Macham orders, the store fulfills.** Macham reads
+the store's listed price, locks the exact total, and settles it through
+PayPal Orders v2 with a human approving in between. No headless purchasing
+on third-party sites, no credential injection, no pooled cards — marketplace
+ToS, card-network rules, and money-transmitter law all forbid the proxy
+pattern, and balance-backed virtual cards do not exist as an API (PayPal
+Key died in 2022).
 
 - Take: Orders v2 create → approve → authorize → capture-within-tolerance.
   Charge USD (no NGN presentment). Verve-only cards decline — ask for
   Visa/Mastercard co-badged.
-- Pay out: Hyperwallet bank transfer (NG = wire, days not minutes,
-  KYC review first time). Batch small payouts: the flat fee dominates.
-- Refunds: reversal lines first, new transfer second, both verified.
+- Refunds: reversal to the verified payer, both lines verified.
 
 ## Seams (already scaffolded)
 
 - `StoreAdapter` (`src/adapters/types.ts`): list/get/search/categories.
   Later: carts, orders, customers, promotions read. A Shopify, Medusa,
   WooCommerce, or Jumia adapter implements the same interface.
-- `AIProvider` (`src/providers/types.ts`): chat completion. Failover across
-  providers lives above this seam.
+- `AIProvider` (`src/providers/types.ts`): chat completion. Server-owned:
+  merchants hold only their `mch_` key and call the assist endpoint
+  (`src/providers/cloud.ts`); Groq/DeepSeek keys never leave our server.
+  Failover across providers lives above this seam.
 
 ## Lanes (in priority order)
 
 1. **API lane (default).** Store adapters and catalog APIs (Channel3 for
    enrichment across retailers). Structured data beats scraping always.
 2. **Search lane.** Self-hosted vector search for semantic inventory and
-   negotiation history. Elastic Docker is free; pgvector/Qdrant are valid
+   order history. Elastic Docker is free; pgvector/Qdrant are valid
    substitutes at small scale.
 3. **Browser lane (read-only discovery only).** Public product pages on
    consenting stores, never credential entry, never third-party checkout.
@@ -78,24 +86,29 @@ virtual cards do not exist as an API (PayPal Key died in 2022).
 - **AG Grid**: Community (MIT) tables for the transaction ledger; Enterprise
   AI Toolkit only if the scored demo needs NL-grid. Verify license cost
   before committing to Enterprise features.
-- **Bryntum**: SKIP unless a scored timeline UI demands it — commercial
-  license + OEM terms kill hackathon velocity. FullCalendar/vis-timeline
-  cover the same demo.
-- **Elastic**: self-hosted Docker for the build; hosted only for a
-  production story.
-- **Astropods**: blueprint target for deploy/governance; keep agent logic
-  portable regardless.
+- **Bryntum**: SKIP stands — the free tier is a 45-day evaluation trial
+  (internal use only, production prohibited). No hackathon distribution
+  grant exists. FullCalendar/vis-timeline cover the same demo.
+- **Elastic**: `src/catalog/elastic.ts` — BM25 now, RRF hybrid when rows
+  carry embeddings. Self-host Docker is free forever; Cloud trial is
+  14 days, no card. Live proof needs Docker or the trial.
+- **Astropods**: `astropods.yml` + `AGENT.md` ship blueprint-ready.
+  Deploy and AI Gateway need their account.
+- **Kernel**: `src/browser/kernel.ts` — read-only lane on the verified
+  REST shapes (sessions, Playwright execute, delete). Live proof needs
+  `KERNEL_API_KEY`.
 - **Render vs InstaCloud**: Render for the hackathon deployment box
   (credits + live URL). InstaCloud proven with our backend (Dockerfile
   deploys, microVM, usage billing) as the standing alternative. Verify
   current free-tier terms before choosing the demo host.
 - **Rialo L1**: audit trail + budget-guard only (DevNet live, testnet
   forming, mainnet not launched). Never claim on-chain delivery proof.
-  See `docs/RESEARCH.md`.
+  Verified live on devnet in `src/settlement/rialo.ts`.
 
 ## Money rule
 
-Negotiate first, lock a quote, authorize (never capture-before-accept),
-capture within tolerance, void and re-quote outside it. Client-reported
+Lock the exact total from the live read, then authorize (never
+capture-before-accept), capture within tolerance, void if it drifts outside
+it. Client-reported
 success is never payment proof. Full rail detail lives in the PayPal
 track; the SDK exposes settled/failed/pending and nothing else.

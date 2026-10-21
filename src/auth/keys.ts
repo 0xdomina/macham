@@ -1,5 +1,7 @@
 import { randomBytes, createHash } from "node:crypto"
 
+export { isKeyShape } from "./key-shape.js"
+
 // Platform API keys. Shape: mch_live_<rand>_<checksum>. Prefix carries
 // zero entropy; the random part does. Test keys never touch live data.
 // Secrets are stored hashed; only prefix + fingerprint index ever read.

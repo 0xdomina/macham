@@ -10,21 +10,11 @@ per-thread cursor + last-success, `failedProviders` telemetry, hidden
 provider identity, 30s timeout / 600-token caps, mock double for offline
 tests, usage-callback hook (hosts own the ledger, never the SDK).
 
-## Seller engine (in build order)
+## Seller engine — removed
 
-1. **Listing writer** — rough notes to title, description, tags, SEO.
-   Zod-structured output. Zero platform coupling.
-2. **Pricing advisor** — suggested/floor/ceiling from caller-supplied
-   aggregates (min/median/max). Never competitor rows.
-3. **Insights Q&A** — NL over injected store JSON. Grounding rule:
-   data-only, say so when unanswerable.
-4. **Accounting digest** — narrative over caller-computed aggregates.
-   Deterministic totals, model narrates.
-5. **Marketing coach** — promos and bundles from injected catalog.
-6. **Daily brief** — narrator over a numbers schema; scheduler and
-   storage stay host-side.
-7. **Recommendations** — deterministic ranker (pure code, no model)
-   plus thin explainer per opportunity.
+Macham is buyer-only. No listing writer, pricing advisor, insights,
+accounting digest, marketing coach, daily brief, or recommendation
+console. The store sets the price; Macham orders it and never haggles.
 
 ## Buyer proxy (in build order)
 

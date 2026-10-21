@@ -6,54 +6,41 @@ re-scoped in writing. Anti-scope at the bottom is equally binding.
 ## DONE
 
 - Seams: `StoreAdapter`, `AIProvider`, shared types, mock store,
-  OpenAI-compatible client (Groq, DeepSeek). Tests green.
-- Doctrine: `ARCHITECTURE.md`, `STANDARDS.md`, `UI_SYSTEM.md`,
-  `AI_FEATURES.md`, `RESEARCH.md`, `KEYS.md`, `MASCOT.md`, `LANDING.md`,
-  `INTEGRATION.md`.
+  zero-code `UniversalAdapter` (shopify · woo · json-ld), server-owned
+  Groq/DeepSeek clients, cloud brain, assist gateway with keystore and
+  metering. Tests green.
+- Doctrine: `ARCHITECTURE.md`, `UI_SYSTEM.md`, `AI_FEATURES.md`,
+  `KEYS.md`, `MASCOT.md`, `LANDING.md`, `INTEGRATION.md`.
 - Tenancy wall: context, namespaced stores, per-tenant router, harness
   tenant gate. Cross-tenant reads miss by construction (tested).
-- Negotiation: bulk tiers, RFQ lifecycle, guardrails (floors, MAP,
-  approvals, audit).
-- Seller caps: listing, pricing, insights, accounting, marketing,
-  brief, deterministic ranker.
 - Buyer proxy: intent, search/compare, cart proposals, threaded chat.
+  Macham is buyer-only: the store sets the price, Macham orders it.
 - Platform: `mch_` keys, billing gates, single-line loader, embeddable
-  widget, PayPal rail, Channel3 lane, Rialo audit layer.
-- Demo app, marketing site, Postman collection, submission checklist.
-- 56/56 tests green. No fabricated data anywhere.
+  widget, PayPal rail, Channel3 + Kernel discovery lanes, Rialo audit layer.
+- Marketing site, Postman collection, submission checklist. (Standalone demo
+  app removed; the widget ships via snippet / SDK / extension.)
+- 43/43 tests green. No fabricated data anywhere.
 
 ## NEXT (in order)
 
-0. **Safety harness + provider router + mock double.** Before any
-   assistant. See `AI_FEATURES.md`.
-1. **Bulk-tier engine.** Qty break tables per SKU (min, tiers, value vs
-   unit MOQ). Auto price from table. Below-MOQ: priced premium or reject
-   with next-tier nudge. Files: `src/negotiation/tiers.ts`, tests.
-2. **RFQ/quote object.** Draft → In Review → Approved → Presented →
-   Accepted → Expired. Buyer posts specs/qty/ship-to; seller side
-   counters with expiry, MOQ, lead time. Files: `src/negotiation/quote.ts`.
-3. **Guardrail engine.** Floor margin, max % off without approval, MAP
-   per brand, approval chain by amount/category/risk. Model proposes,
-   rules dispose. Every concession logged. Files: `src/negotiation/guardrails.ts`.
-4. **Seller engine caps** (listing, pricing, insights, accounting,
-   marketing, brief, recommendations) per `AI_FEATURES.md`.
-5. **Buyer proxy** (intent → search/compare → cart proposal → chat)
+1. **Buyer proxy polish** (intent → search/compare → cart proposal → chat)
    per `AI_FEATURES.md`.
-6. **Checkout execution (PayPal sandbox).** Quote → Orders v2 create →
-   approve → authorize → capture-within-tolerance → receipt + refund
-   path. Files: `src/rails/paypal.ts`, Postman collection.
-7. **Catalog enrichment lane.** Channel3 search/lookup behind the
-   adapter seam (server key only). Files: `src/catalog/channel3.ts`.
-8. **Ledger dashboard** (`UI_SYSTEM.md` tokens) + approval queue with
+2. **Checkout execution (PayPal sandbox).** Locked total → Orders v2 create
+   → approve → authorize → capture-within-tolerance → receipt + refund path.
+   Files: `src/rails/paypal.ts`, Postman collection.
+3. **Catalog enrichment lane.** Channel3 search/lookup plus the read-only
+   Kernel browser fallback, behind the adapter seam (server key only).
+   Files: `src/catalog/channel3.ts`, `src/browser/kernel.ts`.
+4. **Ledger dashboard** (`UI_SYSTEM.md` tokens) + approval queue with
    Undo + audit.
-9. **Voice loop.** Mic → intent → summary TTS on the buyer
+5. **Voice loop.** Mic → intent → summary TTS on the buyer
    micro-frontend.
 
 ## LATER
 
-- Multi-supplier RFQ broadcast, CPQ-style approval chains, shipping-terms
-  negotiation (Incoterms, split shipments), browser fallback lane,
-  seller/buyer onboarding flows, demo video script.
+- Shipping-terms handling (Incoterms, split shipments) for physical goods,
+  buyer onboarding flows, demo video script. (The browser discovery lane and
+  Kernel fallback are already shipped.)
 - Budget-guard contract on Rialo testnet (cap plus allowlist plus timer
   refund). Audit trail ships in `src/settlement/rialo.ts`. Verify timers
   on testnet before claiming guard behavior.
@@ -78,6 +65,8 @@ only. Monetize via affiliate commissions on the handoff.
 
 ## Anti-scope (do NOT build)
 
+- Any seller console, RFQ/negotiation engine, or bulk-tier pricing. Macham
+  is buyer-only; the store's listed price is the price.
 - Open haggling on fixed-price B2C goods.
 - Agent-set prices without a price book or tier table.
 - Advertised prices below MAP, including via stacked coupons.

@@ -17,8 +17,15 @@ test("mock adapter lists, searches, and reads one product", async () => {
   assert.equal(cats.length, 1)
 })
 
-test("provider constructors reject missing keys", async () => {
-  const { groqProvider, deepseekProvider } = await import("../dist/index.js")
-  assert.throws(() => groqProvider(""), /API key needed/)
-  assert.throws(() => deepseekProvider(""), /API key needed/)
+test("no merchant BYOK on the public surface", async () => {
+  const pub = await import("../dist/index.js")
+  assert.equal(pub.groqProvider, undefined)
+  assert.equal(pub.deepseekProvider, undefined)
+  assert.equal(typeof pub.MachamCloudProvider, "function")
+  assert.throws(() => new pub.MachamCloudProvider("bad-key", "https://api.macham.io"), /Macham API key needed/)
+})
+
+test("server providers still reject missing keys", async () => {
+  const { OpenAICompatibleProvider } = await import("../dist/providers/openai-compatible.js")
+  assert.throws(() => new OpenAICompatibleProvider({ name: "groq", baseUrl: "https://x", apiKey: "", model: "m" }), /API key needed/)
 })

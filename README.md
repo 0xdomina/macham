@@ -2,70 +2,75 @@
 
 Every store gets an assistant. Every shopper gets answers.
 
-A shopper types "warm jackets under ₦50,000". Macham finds them across
-real catalogs, compares prices, proposes the bag, and settles through
-PayPal. Sellers get the same brain for listings, pricing, and stock
-questions. One snippet drops it into any store.
+- Video: [video URL]
+- Widget: one `<script>` tag on any storefront
+- Website: [site URL]
+- API: [public Postman workspace](https://www.postman.com/domina9193-4264801/macham)
 
-## See it work (60 seconds)
+## What it is
 
-```bash
-cd demo && npm install && npm run dev
-```
+Macham is a commerce assistant that works with any store. A shopper asks for products in plain language. Macham searches live catalogs, compares offers, proposes the bag, and settles through PayPal after a human approves. Prices are fixed by the store — Macham orders them, it does not haggle. One key meters everything. Model keys never leave the server.
 
-Open the page. Search a product. Ask the chat. Approve a proposal.
-Watch the ledger record it. No account, no keys, no setup.
+## Problem
+
+Small stores lose shoppers they never get to talk to. Replies take hours. Shoppers leave in under a minute. Support teams paste tracking links all day. Existing chatbots invent prices and die at checkout. Macham answers in seconds, prices from live reads, and closes through PayPal.
 
 ## What it does
 
-- **Shoppers:** search, compare, cart proposals, order tracking, voice
-  input. Numbers always come from live catalogs, never invented.
-- **Sellers:** listing writer, price advisor, insights, accounting
-  digest, marketing ideas, daily brief. Aggregates in, guidance out.
-- **Checkout:** quote, approve, authorize, capture within tolerance,
-  receipt, refund path. Outside tolerance voids and re-quotes.
-  Capture stays within tolerance or re-quotes. Refunds return to the
-  verified payer.
+Shoppers search in plain language, compare live offers, get cart proposals, approve in chat, pay through PayPal, and talk by voice. Checkout locks the exact total from the live read, then the human approves, then PayPal authorizes and captures within tolerance, then the receipt lands. Refunds return to the verified payer.
 
-## How it stays honest
+## How it ships in
 
-- Fixed prices never get haggled. Negotiation lives in bulk tiers,
-  clearance, and shipping — inside merchant guardrails, every
-  concession logged.
-- AI proposes. Humans approve. Money moves on rails, not on words.
-- Platforms never see each other. Tenants, users, and histories are
-  partitioned by construction and proven by tests.
+The buyer assistant is one **widget**: a small bottom-right bubble that opens a
+floatable chat panel (never full-screen). Three routes mount that same widget:
 
-## Built with
+| Route | Who | Effort |
+|---|---|---|
+| Snippet | Any storefront with HTML access | One `<script>` tag + one init call. |
+| SDK | Custom UI and Node backends | `Macham.init({…})`, or your own adapter / `new UniversalAdapter(url)`. |
+| Extension | Shoppers on stores that never integrate | Auto-mounts the widget on any store; configure key/tenant once. |
+
+Shopify, WooCommerce, and JSON-LD storefronts need zero store-side code — the
+adapter detects the lane. Exotic backends implement five methods once.
+
+## Stack
 
 | Layer | Choice |
 |---|---|
-| Payments | PayPal Orders v2 (sandbox-first), Agent Toolkit patterns |
-| Catalog | Channel3 API, server key only |
-| Tables | AG Grid Community |
-| Contracts | Postman collections with mocks |
-| Voice | Browser speech APIs, zero vendors |
+| Assist gateway | Node server, zero new dependencies. Key verify, plan gate, usage metering. |
+| Catalog | Universal adapter first, Channel3 enrichment second. Server keys only. |
+| Money | PayPal Orders v2, sandbox-first. Tolerance-checked capture. |
+| Audit | Rialo testnet. Every settlement event anchored with a Memo transaction. |
+| Tables | AG Grid Community. Live ledger rows, approvals with Undo. |
+| Contracts | Postman public workspace plus OpenAPI. Import into APIMatic for SDKs. |
+| Voice | Browser speech APIs. No vendors. |
+| Browser lane | Kernel REST (sessions, Playwright execute, delete). Read-only. Fallback only. |
+| Semantic lane | Elastic BM25 now, hybrid when rows carry vectors. Activates per store. |
+| Deploy | Astropods blueprint plus Render. Portable agent logic regardless. |
 
-## Next
+A request travels one path. Store reads normalize to products. The safety harness checks every capability against its contract. The provider router answers through Groq with failover. PayPal moves the money. Rialo remembers it.
 
-Live sandbox money loop on video. APIMatic plugin from the contract.
-Elastic lane when a store needs semantic search. Astropods blueprint
-for deploy. Browser lane only where APIs don't exist.
+## Proof
 
-## Status
+Live sandbox order created, approve host `www.sandbox.paypal.com`. Any-store resolve against a live store, zero keys, products with titles, merchant URLs, prices. Assist gateway answers with real narration and meters usage. Bad and revoked keys get `401`. Rialo devnet append signs and read-back matches. All dated 2026-10-03 in `docs/SUBMISSION.md`. 43/43 tests green. Fail-closed throughout.
 
-Live: SDK seams, negotiation engine, seller caps, buyer proxy, PayPal
-rail, Channel3 lane, demo app, 47 green tests. Live-money proof runs
-the moment sandbox keys land — the code paths wait, nothing is stubbed
-around them.
+## Run it
 
-Next: sandbox money loop on video, pilot sellers, public launch.
+Merchant embed (one line, mounts the widget on their store):
 
-## Integrate (10 minutes)
-
-```ts
-import { MockStoreAdapter, groqProvider } from "macham"
+```html
+<script src="https://YOUR-MACHAM-HOST/macham.js"></script>
+<script>Macham.init({ apiKey: "mch_live_…", tenantId: "your-store" })</script>
 ```
 
-Full guide: `docs/INTEGRATION.md`. Rules: `docs/STANDARDS.md`.
-Map: `docs/FEATURES.md`. Evidence: `docs/RESEARCH.md`.
+Gateway (serves the widget's brain, catalog reads, PayPal, and settlement):
+
+```bash
+npm install && npm run build && npm test # 48 green, offline
+node server/keys.mjs mint --env live --orders  # secret prints once
+node server/assist.mjs   # /v1/assist, /v1/catalog/resolve, /v1/orders, /v1/settlement/*
+```
+
+## License
+
+MIT. See `LICENSE`.

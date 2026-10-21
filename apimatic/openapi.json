@@ -1,0 +1,126 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Macham assist gateway",
+    "version": "0.1.0",
+    "description": "Merchant integration surface. One key (mch_) meters sessions and model calls. Model keys never leave this server. Import into APIMatic or Postman to generate SDKs and docs. Terms and pricing ship in launch comms, never in this contract."
+  },
+  "servers": [{ "url": "https://api.macham.io", "description": "Production" }, { "url": "http://localhost:8787", "description": "Reference server (server/assist.mjs)" }],
+  "security": [{ "machamKey": [] }],
+  "components": {
+    "securitySchemes": {
+      "machamKey": { "type": "http", "scheme": "bearer", "bearerFormat": "mch_live_... / mch_test_...", "description": "Dashboard-issued platform key. Test keys never touch live data." }
+    },
+    "schemas": {
+      "ChatMessage": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": { "type": "string", "enum": ["system", "user", "assistant"] },
+          "content": { "type": "string", "minLength": 1, "maxLength": 4000 }
+        }
+      },
+      "AssistRequest": {
+        "type": "object",
+        "required": ["messages"],
+        "properties": {
+          "messages": { "type": "array", "minItems": 1, "maxItems": 20, "items": { "$ref": "#/components/schemas/ChatMessage" } },
+          "max_tokens": { "type": "integer", "minimum": 1, "maximum": 1024, "default": 512 },
+          "temperature": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.3 }
+        }
+      },
+      "AssistResponse": {
+        "type": "object",
+        "required": ["text"],
+        "properties": { "text": { "type": "string", "description": "Assistant reply. Provider identity is never exposed." } }
+      },
+      "ResolveRequest": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "maxLength": 500, "description": "Product link from any store." },
+          "query": { "type": "string", "maxLength": 120, "description": "Search words when there is no link." },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 24, "default": 12 }
+        }
+      },
+      "ResolvedProduct": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string" },
+          "image": { "type": "string", "nullable": true },
+          "url": { "type": "string", "nullable": true },
+          "domain": { "type": "string", "nullable": true },
+          "amountMinor": { "type": "integer", "nullable": true },
+          "currency": { "type": "string", "nullable": true }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": ["ok", "plan", "uptime_s"],
+        "properties": {
+          "ok": { "type": "boolean" },
+          "plan": { "type": "string", "enum": ["free", "pro", "team"] },
+          "uptime_s": { "type": "integer" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": { "error": { "type": "string", "description": "Short message plus the single next step." } }
+      }
+    }
+  },
+  "paths": {
+    "/v1/assist": {
+      "post": {
+        "summary": "Ask the assistant",
+        "description": "Metered per key against plan limits. Failures are never billed. 401 bad key. 403 scope. 429 quota or rate. 503 provider down.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AssistRequest" } } } },
+        "responses": {
+          "200": { "description": "Reply.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AssistResponse" } } } },
+          "400": { "description": "Bad shape.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "Key rejected.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Scope missing.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "429": { "description": "Quota or rate.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "503": { "description": "Provider down.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/v1/catalog/resolve": {
+      "post": {
+        "summary": "Resolve any store link",
+        "description": "Needs catalog scope. First-party PWA key. Origin-checked when configured. Counts one session.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResolveRequest" } } } },
+        "responses": {
+          "200": { "description": "Products.", "content": { "application/json": { "schema": { "type": "object", "properties": { "products": { "type": "array", "items": { "$ref": "#/components/schemas/ResolvedProduct" } } } } } } },
+          "400": { "description": "Bad shape.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "Key rejected.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Scope or origin.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "429": { "description": "Quota or rate.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "503": { "description": "Catalog down.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/v1/assist/capability": {
+      "post": {
+        "summary": "Run one guarded capability",
+        "description": "Model output is contract-checked server-side. Needs assist scope. Counts one session plus one call on success only.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["capability", "input"], "properties": { "capability": { "type": "string", "example": "listing" }, "input": { "type": "string", "maxLength": 2000 }, "context": { "type": "object", "description": "Caller data, max 16KB. The only numbers the model may use." } } } } } },
+        "responses": {
+          "200": { "description": "Validated result.", "content": { "application/json": { "schema": { "type": "object", "properties": { "capability": { "type": "string" }, "result": { "type": "object" } } } } } },
+          "400": { "description": "Bad shape.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "503": { "description": "Answer invalid.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Server health",
+        "security": [],
+        "responses": {
+          "200": { "description": "Up.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HealthResponse" } } } }
+        }
+      }
+    }
+  }
+}

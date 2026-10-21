@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto"
 
-// PayPal Orders v2 rail, sandbox-first. Negotiate first, lock a quote,
-// create the order for the quote total, buyer approves, authorize, then
-// capture within tolerance (or void and re-quote outside it).
+// PayPal Orders v2 rail, sandbox-first. Lock the exact total, create the
+// order for it, buyer approves, authorize, then capture within tolerance
+// (or void if it drifts outside).
 
 export type PayPalEnv = "sandbox" | "live"
 
@@ -165,6 +165,65 @@ export class PayPalRail {
     }
     return this.call(
       `/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+      { method: "POST", body: "{}" },
+      PayPalRail.idempotencyKey(),
+      fetcher
+    )
+  }
+
+  /** Authorize an order created with intent=AUTHORIZE. */
+  async authorizeOrder(
+    orderId: string,
+    fetcher: typeof fetch = fetch
+  ): Promise<PayPalOrder & { authorizationId?: string }> {
+    if (!orderId.trim()) throw new Error("Order id needed.")
+    const body = await this.call<any>(
+      `/v2/checkout/orders/${encodeURIComponent(orderId)}/authorize`,
+      { method: "POST", body: "{}" },
+      PayPalRail.idempotencyKey(),
+      fetcher
+    )
+    const authorization = body?.purchase_units?.[0]?.payments?.authorizations?.[0]
+    return {
+      id: body.id,
+      status: body.status,
+      authorizationId: authorization?.id,
+      approveUrl: (body.links ?? []).find(
+        (l: any) => l.rel === "approve" || l.rel === "payer-action"
+      )?.href,
+    }
+  }
+
+  /** Capture a specific authorization, for exactly the amount approved. */
+  async captureAuthorization(
+    authorizationId: string,
+    amountMinor: number,
+    currency: string,
+    fetcher: typeof fetch = fetch
+  ): Promise<any> {
+    if (!authorizationId.trim()) throw new Error("Authorization id needed.")
+    if (!Number.isInteger(amountMinor) || amountMinor <= 0) throw new Error("Amount must be positive minor units.")
+    return this.call(
+      `/v2/payments/authorizations/${encodeURIComponent(authorizationId)}/capture`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          amount: { value: major(amountMinor), currency_code: currency.toUpperCase() },
+        }),
+      },
+      PayPalRail.idempotencyKey(),
+      fetcher
+    )
+  }
+
+  /** Release an authorization without taking money. */
+  async voidAuthorization(
+    authorizationId: string,
+    fetcher: typeof fetch = fetch
+  ): Promise<any> {
+    if (!authorizationId.trim()) throw new Error("Authorization id needed.")
+    return this.call(
+      `/v2/payments/authorizations/${encodeURIComponent(authorizationId)}/void`,
       { method: "POST", body: "{}" },
       PayPalRail.idempotencyKey(),
       fetcher

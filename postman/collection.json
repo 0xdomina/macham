@@ -1,15 +1,63 @@
 {
   "info": {
     "name": "Macham rails",
-    "description": "Money and catalog calls behind the demo. PayPal runs sandbox-first. Channel3 needs a server key. Macham SDK calls (tiers, guardrails, proposals) run in-process — see test/ for executable contracts.",
+    "description": "Money and catalog calls behind the app. PayPal runs sandbox-first. Channel3 needs a server key. Macham SDK calls (search, compare, cart proposals) run in-process — see test/ for executable contracts.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "paypal_base", "value": "https://api-m.sandbox.paypal.com" },
-    { "key": "channel3_base", "value": "https://api.trychannel3.com" }
+    { "key": "channel3_base", "value": "https://api.trychannel3.com" },
+    { "key": "assist_base", "value": "http://localhost:8787" }
   ],
   "item": [
     {
+      "name": "Assist gateway",
+      "item": [
+        {
+          "name": "Health",
+          "request": { "method": "GET", "url": "{{assist_base}}/health" }
+        },
+        {
+          "name": "Ask the assistant",
+          "request": {
+            "method": "POST",
+            "url": "{{assist_base}}/v1/assist",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{MACHAM_API_KEY}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messages\": [{ \"role\": \"user\", \"content\": \"Find warm jackets under 50000\" }]\n}"
+            }
+          }
+        },
+        {
+          "name": "Run a capability",
+          "request": {
+            "method": "POST",
+            "url": "{{assist_base}}/v1/assist/capability",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{MACHAM_API_KEY}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"capability\": \"listing\",\n  \"input\": \"Write a listing from these notes\",\n  \"context\": { \"notes\": \"warm jacket, waterproof\", \"priceMinor\": 4650 }\n}"
+            }
+          }
+        },
+        {
+          "name": "Resolve any store link",
+          "request": {
+            "method": "POST",
+            "url": "{{assist_base}}/v1/catalog/resolve",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{MACHAM_API_KEY}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"warm jackets\",\n  \"limit\": 6\n}"
+            }
+          }
+        }
+      ]
+    },    {
       "name": "PayPal",
       "item": [
         {

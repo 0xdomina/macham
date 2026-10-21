@@ -6,3 +6,7 @@ dist/
 .DS_Store
 
 dist-loader/
+data/
+
+# Generated double-click build. Regenerate with: npm run build:single (site/)
+site/single.html

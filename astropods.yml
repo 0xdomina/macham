@@ -1,0 +1,17 @@
+name: macham-assist
+description: Store-agnostic commerce assistant. Search, proposals, approvals, PayPal settlement.
+image: macham-assist:0.1.0
+models:
+  - groq/qwen-qwen3.8-27b
+knowledge: []
+tools:
+  - paypal-orders-v2
+  - channel3-catalog
+  - rialo-audit
+secrets:
+  GROQ_API_KEY: "@GROQ_API_KEY"
+  PAYPAL_CLIENT_SECRET: "@PAYPAL_CLIENT_SECRET"
+  CHANNEL3_API_KEY: "@CHANNEL3_API_KEY"
+env:
+  PAYPAL_ENV: sandbox
+  RIALO_NETWORK: testnet

@@ -42,11 +42,7 @@ npm i macham
 ```
 
 ```ts
-import { /* your adapter */, /* your provider */ } from "macham"
-```
-
-```ts
-<Assistant store={myStore} brain={myBrain} mascot="beam" />
+Macham.init({ store: myStore, apiKey: "mch_live_...", tenantId: "my-store" })
 ```
 
 Real code, copy button, working in 60 seconds.
