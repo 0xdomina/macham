@@ -15,3 +15,8 @@ site/single.html
 .taste-skill/
 .playwright-mcp/
 audit_dump.txt
+
+# Agent instruction files stay local; not part of the public product repo
+AGENT.md
+AGENTS.md
+CLAUDE.md
