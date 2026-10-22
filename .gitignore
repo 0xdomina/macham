@@ -10,3 +10,8 @@ data/
 
 # Generated double-click build. Regenerate with: npm run build:single (site/)
 site/single.html
+
+# frontend-craft / design-taste working files (scratch, not product)
+.taste-skill/
+.playwright-mcp/
+audit_dump.txt
