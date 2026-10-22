@@ -11,8 +11,7 @@ Macham puts a buyer agent on any fixed-price store with one line: it reads the l
 - Chatbots bolted onto a storefront quote prices and stock they never read. Every invented number becomes a refund or a complaint.
 - Owners will not let a bot spend a customer's money, so most fixed-price stores run no assistant at all.
 
-## Solution
-
+## Solution: how it works
 An assistant that lives on the store's own page and only talks about what the store actually sells.
 
 - The store pastes one tag, `<script src="https://YOUR-MACHAM-HOST/macham.js">`, where that host is wherever the gateway runs and serves `GET /macham.js`. Shoppers on stores that never integrate install the browser extension instead.
@@ -85,6 +84,8 @@ store page   widget + reader       holds mch_ key only
 From an existing checkout; the package is not published to npm.
 
 ```bash
+git clone https://github.com/0xdfinity/macham.git
+cd macham
 npm install
 npm run build   # tsc -p tsconfig.build.json, writes dist/
 npm test        # node --test ./test/*.mjs

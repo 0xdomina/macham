@@ -260,7 +260,7 @@ h2.claim {
 .turn > .say b { font-weight: 600; }
 
 /* ── the live interface fragment (data-ui) ───────────── */
-.demo {
+.flow {
   position: relative;
   border-radius: var(--radius);
   background: var(--card);
@@ -310,8 +310,8 @@ h2.claim {
   box-shadow: 0 18px 40px rgba(20, 20, 12, 0.16);
   transition: max-height var(--m-soft) var(--ease);
 }
-.demo.open [data-ui] .ui-panel,
-.demo.open .ui-panel { max-height: 460px; }
+.flow.open [data-ui] .ui-panel,
+.flow.open .ui-panel { max-height: 460px; }
 [data-ui] .ui-inner { padding: 14px; display: grid; gap: 10px; }
 [data-ui] .ui-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
 [data-ui] .ui-ask {
