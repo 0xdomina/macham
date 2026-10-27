@@ -649,7 +649,10 @@ const server = createServer(async (req, res) => {
     let result
     try {
       result = await router.chat(body.messages, { maxTokens: Math.min(1024, body.max_tokens ?? 512), temperature: body.temperature ?? 0.3, tenantId: record.id })
-    } catch {
+    } catch (e) {
+      // The brand owns the model keys; a merchant never sees one. When the
+      // upstream fails, the operator needs the reason in the log.
+      console.log(JSON.stringify({ t: new Date().toISOString(), msg: "assist upstream failed", error: String(e?.message ?? e).slice(0, 200) }))
       return done(503, { error: "Assistant unavailable. Retry." })
     }
     store.addUsage(record.fingerprint, month, { sessions: 1, modelCalls: 1 })

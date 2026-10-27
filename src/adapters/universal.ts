@@ -8,7 +8,7 @@ import type { StoreAdapter } from "./types.js"
 // Fail-closed with short messages. Server-side recommended: store CORS
 // policies may block browsers. The gateway resolve route hosts this lane.
 
-export type UniversalPlatform = "shopify" | "woo" | "jsonld"
+export type UniversalPlatform = "shopify" | "woo" | "jsonld" | "dom"
 
 type Fetcher = (url: string, init?: RequestInit) => Promise<Response>
 
@@ -39,7 +39,7 @@ export class UniversalAdapter implements StoreAdapter {
   /** Detected lane, cached. Null when the store reads nothing public. */
   async detect(): Promise<UniversalPlatform | null> {
     if (this.platform !== undefined) return this.platform
-    this.platform = (await this.probeShopify()) ? "shopify" : (await this.probeWoo()) ? "woo" : (await this.probeSitemap()) ? "jsonld" : null
+    this.platform = (await this.probeShopify()) ? "shopify" : (await this.probeWoo()) ? "woo" : (await this.probeSitemap()) ? "jsonld" : (canReadPage() ? "dom" : null)
     return this.platform
   }
 
@@ -47,6 +47,7 @@ export class UniversalAdapter implements StoreAdapter {
     const platform = await this.detect()
     if (!platform) throw new Error("Store not readable.")
     const limit = Math.min(Math.max(input?.limit ?? 12, 1), 30)
+    if (platform === "dom") return this.domList(input?.query, limit)
     if (platform === "shopify") return this.shopifyList(input?.query, limit)
     if (platform === "woo") return this.wooList(input?.query, input?.categoryId, limit)
     return this.jsonldList(input?.query, limit)
@@ -57,6 +58,7 @@ export class UniversalAdapter implements StoreAdapter {
     if (!platform) throw new Error("Store not readable.")
     const key = (idOrHandle ?? "").trim()
     if (!key) return null
+    if (platform === "dom") return (await this.domList(undefined, 30)).find((p) => p.id === key || p.handle === key) ?? null
     if (platform === "shopify") return this.shopifyGet(key)
     if (platform === "woo") return this.wooGet(key)
     return this.jsonldGet(key)
@@ -354,6 +356,163 @@ export class UniversalAdapter implements StoreAdapter {
     if (!hit) return null
     const raw = await this.fetchJsonLd(hit)
     return raw ? this.jsonldMap(raw, hit) : null
+  }
+
+  /**
+   * Last lane: the page the widget is standing on. A content script already
+   * holds the shopper's rendered DOM, so a store with no public catalogue
+   * endpoint — Jumia, and most of the web — is still readable. Structured data
+   * first, then the product cards the shopper can already see. No request the
+   * store did not already make.
+   */
+  private async domList(query: string | undefined, limit: number): Promise<Product[]> {
+    if (!canReadPage()) return []
+    const out: Product[] = []
+    const seen = new Set<string>()
+    const push = (p: Product | null): void => {
+      if (!p || !p.title) return
+      const k = p.title.toLowerCase()
+      if (seen.has(k)) return
+      seen.add(k)
+      out.push(p)
+    }
+    document.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"]').forEach((s) => {
+      let data: unknown
+      try {
+        data = JSON.parse(s.textContent ?? "")
+      } catch {
+        return
+      }
+      readLdProducts(data, push)
+    })
+    document.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((a) => {
+      if (out.length >= limit * 6) return
+      const img = a.querySelector("img")
+      if (!img) return
+      const money = readMoney(`${a.textContent ?? ""} ${a.parentElement?.textContent ?? ""}`)
+      if (!money) return
+      const title = (img.getAttribute("alt") || a.getAttribute("title") || a.textContent || "").replace(/\s+/g, " ").trim()
+      if (title.length < 2) return
+      push({ id: a.href, handle: a.href, title: title.slice(0, 120), imageUrl: readImageUrl(img), price: money })
+    })
+    const keys = (query ?? "").toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2)
+    const matched = keys.length
+      ? out.filter((p) => keys.some((k) => `${p.title} ${p.description ?? ""}`.toLowerCase().includes(k)))
+      : out
+    return matched.slice(0, limit)
+  }
+}
+
+function canReadPage(): boolean {
+  return typeof document !== "undefined" && !!document.body
+}
+
+// The price is the number beside the currency mark, never the first number in
+// the text: a card reading "15.6 inch laptop, ₦345,000" would otherwise be
+// offered to the shopper at fifteen naira.
+const MARK_G = "([$\\u20ac\\u00a3\\u00a5\\u20b9\\u20a6\\u20ba\\u20bd\\u20a9\\u20b4\\u20b1\\u20ab\\u20b5\\u20aa]|\\b(?:USD|EUR|GBP|NGN|TRY|RUB|KRW|UAH|PHP|VND|GHS|KES|ZAR|INR|JPY|AUD|CAD|BRL|CHF|SEK|PLN|MYR|SGD|HKD|THB|IDR|ILS)\\b)"
+const NUM = "(?:\\d{1,3}(?:[,. ]\\d{3})+(?:\\.\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)"
+const MONEY_BEFORE = new RegExp(`${MARK_G}\\s*(${NUM})`, "i")
+const MONEY_AFTER = new RegExp(`\\b(${NUM})\\s*${MARK_G}`, "i")
+const SYMBOL_CODE: Record<string, string> = { "$": "USD", "€": "EUR", "£": "GBP", "¥": "JPY", "₹": "INR", "₦": "NGN", "₺": "TRY", "₽": "RUB", "₩": "KRW", "₴": "UAH", "₱": "PHP", "₫": "VND", "₵": "GHS", "₪": "ILS" }
+
+function toMinor(digits: string): number | null {
+  const s = digits.replace(/[^\d.,]/g, "")
+  const lastComma = s.lastIndexOf(",")
+  const lastDot = s.lastIndexOf(".")
+  let norm = s
+  if (lastComma > -1 && lastDot > -1) {
+    norm = lastComma > lastDot ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "")
+  } else if (lastComma > -1) {
+    const tail = s.length - lastComma - 1
+    norm = tail === 2 && s.split(",").length === 2 ? s.replace(",", ".") : s.replace(/,/g, "")
+  } else {
+    norm = s.replace(/,/g, "")
+  }
+  const v = Number(norm)
+  return Number.isFinite(v) && v >= 0 ? Math.round(v * 100) : null
+}
+
+function readMoney(raw: string): { amountMinor: number; currency: string } | null {
+  const text = (raw ?? "").replace(/\s+/g, " ").trim()
+  const before = text.match(MONEY_BEFORE)
+  const mark = before ? before[1] : ""
+  const digits = before ? before[2] : ""
+  if (!before) {
+    const after = text.match(MONEY_AFTER)
+    if (!after) return null
+    const minor = toMinor(after[1])
+    const tail = after[2]
+    if (minor === null) return null
+    return { amountMinor: minor, currency: /^[A-Za-z]{3}$/.test(tail) ? tail.toUpperCase() : SYMBOL_CODE[tail] ?? "USD" }
+  }
+  const minor = toMinor(digits)
+  if (minor === null) return null
+  return { amountMinor: minor, currency: /^[A-Za-z]{3}$/.test(mark) ? mark.toUpperCase() : SYMBOL_CODE[mark] ?? "USD" }
+}
+
+// Stores lazy-load: the live src is often a placeholder and the real URL sits in
+// a data-* attribute or the srcset.
+function readImageUrl(img: HTMLImageElement): string | null {
+  let src = img.currentSrc || img.src || ""
+  if (!/^https?:\/\//i.test(src) || src.startsWith("data:")) {
+    const alt = img.getAttribute("data-src") || img.getAttribute("data-original") || img.getAttribute("data-lazy-src") || ""
+    const ss = (img.getAttribute("srcset") || img.getAttribute("data-srcset") || "").split(",").pop()?.trim().split(/\s+/)[0] || ""
+    src = /^https?:\/\//i.test(alt) ? alt : /^https?:\/\//i.test(ss) ? ss : src
+  }
+  if (/^\/\//.test(src)) src = `${location.protocol}${src}`
+  return /^https?:\/\//i.test(src) ? src : null
+}
+
+function ldImage(v: unknown): string {
+  if (!v) return ""
+  if (typeof v === "string") return v
+  if (Array.isArray(v)) {
+    for (const one of v) {
+      const r = ldImage(one)
+      if (r) return r
+    }
+    return ""
+  }
+  if (typeof v === "object") return ldImage((v as Record<string, unknown>).url ?? (v as Record<string, unknown>).contentUrl ?? "")
+  return ""
+}
+
+// Walks the JSON-LD graph for Product nodes, which a store may nest under an
+// ItemList, an array, or a @graph.
+function readLdProducts(node: unknown, push: (p: Product | null) => void): void {
+  if (!node || typeof node !== "object") return
+  if (Array.isArray(node)) {
+    for (const one of node) readLdProducts(one, push)
+    return
+  }
+  const n = node as Record<string, any>
+  const types = (Array.isArray(n["@type"]) ? n["@type"] : [n["@type"]]).map((t: unknown) => String(t ?? "").toLowerCase())
+  if ((types.includes("product") || types.includes("productgroup")) && n.name) {
+    const offers = Array.isArray(n.offers) ? n.offers[0] : n.offers
+    const price = offers && typeof offers === "object" ? offers.price ?? offers.lowPrice : offers && typeof offers === "string" ? offers : undefined
+    const money = price === undefined || price === null ? null : readMoney(`${price} ${String(offers?.priceCurrency ?? "")}`)
+    if (money) {
+      push({
+        id: String(n.sku ?? n.productID ?? n.url ?? n.name),
+        handle: String(n.sku ?? n.productID ?? ""),
+        title: String(n.name).replace(/\s+/g, " ").trim().slice(0, 120),
+        description: typeof n.description === "string" ? n.description.slice(0, 300) : null,
+        imageUrl: (() => {
+          const u = ldImage(n.image ?? n.thumbnailUrl)
+          if (!u) return null
+          try {
+            return new URL(u, location.href).href
+          } catch {
+            return null
+          }
+        })(),
+        price: money,
+      })
+    }
+  }
+  for (const k of Object.keys(n)) {
+    if (k !== "@type") readLdProducts(n[k], push)
   }
 }
 

@@ -31,16 +31,21 @@ async function boot(): Promise<void> {
   const apiKey = (cfg.machamKey ?? "").trim()
   const tenantId = (cfg.machamTenant ?? "").trim()
   const assistUrl = (cfg.machamAssist ?? "").trim().replace(/\/$/, "")
-  if (!isKeyShape(apiKey) || !tenantId) return // not configured: stay silent, inject nothing
+  // A key is not needed to be useful here: the widget reads the store page the
+  // shopper is already on, so it mounts on every store. The key and a named
+  // assist endpoint only add the cloud brain on top, and the endpoint is never
+  // inferred from the page, so a configured key cannot be sent to a stranger's
+  // site.
+  const cloud = isKeyShape(apiKey) && !!assistUrl && !!tenantId
 
   document.documentElement.setAttribute(FLAGS, "1")
   try {
     mountAssistant(document.body, {
       store: new UniversalAdapter(window.location.origin),
-      apiKey,
-      tenantId,
+      apiKey: isKeyShape(apiKey) ? apiKey : undefined,
+      tenantId: tenantId || undefined,
       assistUrl: assistUrl || undefined,
-      brain: new MachamCloudProvider(apiKey, assistUrl || window.location.origin),
+      ...(cloud ? { brain: new MachamCloudProvider(apiKey, assistUrl) } : {}),
     })
   } catch {
     document.documentElement.removeAttribute(FLAGS)

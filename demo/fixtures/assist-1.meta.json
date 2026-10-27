@@ -1,0 +1,9 @@
+{
+  "stub": false,
+  "capturedAt": "2026-10-22T12:22:16.347Z",
+  "origin": "live POST /v1/assist on server/assist.mjs, scratch keystore, minted mch_test_ key",
+  "endpoint": "POST /v1/assist (src/providers/cloud.ts:28)",
+  "typedByBuyer": "i need a parka or a shell",
+  "replyOnScreen": "The Harbor Parka is available for USD 42.00, while the Trail Shell costs USD 46.50.",
+  "intent": "product_search"
+}

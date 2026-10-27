@@ -3,9 +3,11 @@ import type { StoreAdapter } from "../adapters/types.js"
 import type { Product } from "../types.js"
 import {
   classifyBuyerIntent,
+  sortOrder,
+  stripSortWords,
   type BuyerIntent,
 } from "./intent.js"
-import { narrateCompare, narrateSearch, proposeCart, searchProducts } from "./shop.js"
+import { narrateCompare, narrateSearch, orderHits, proposeCart, searchProducts, SORT_LABEL } from "./shop.js"
 
 // Threaded buyer chat: bounded history, intent-routed tools, grounded
 // narration. Guests and signed-in actors alike; the host owns storage and
@@ -58,6 +60,23 @@ export async function chatTurn(
     return {
       reply: { intent, text: wording, proposal },
       history: [...log, { role: "assistant", text: wording } as ChatTurn],
+    }
+  }
+
+  if (intent === "sort") {
+    const order = sortOrder(text)
+    // The ordering words are dropped from the search: no store has a product
+    // called "cheapest", so leaving them in finds nothing.
+    const hits = await searchProducts(store, stripSortWords(text) || text, 8)
+    if (!hits.length || !order) {
+      const reply = "Nothing on this page to order yet. Tell me what to look for first."
+      return { reply: { intent, text: reply }, history: [...log, { role: "assistant", text: reply } as ChatTurn] }
+    }
+    const sorted = orderHits(hits, order)
+    const reply = `Sorted ${SORT_LABEL[order]}. ${sorted.slice(0, 3).map((h, i) => `${i + 1}. ${h.product.title}`).join("; ")}`
+    return {
+      reply: { intent, text: reply, products: sorted.map((h) => h.product) },
+      history: [...log, { role: "assistant", text: reply } as ChatTurn],
     }
   }
 

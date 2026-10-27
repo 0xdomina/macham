@@ -1,7 +1,7 @@
 import { Harness, type Contract } from "../safety/harness.js"
 import type { StoreAdapter } from "../adapters/types.js"
 import type { Product } from "../types.js"
-import { classifyBuyerIntent, extractKeywords } from "./intent.js"
+import { classifyBuyerIntent, extractKeywords, type SortOrder } from "./intent.js"
 
 // Buyer shopping loop: intent → grounded catalog results → comparative
 // narration → approvable cart proposal. The model never touches inventory
@@ -50,6 +50,29 @@ export async function searchProducts(
     priceMinor: cheapestPrice(product),
     currency: product.price?.currency ?? null,
   }))
+}
+
+export const SORT_LABEL: Record<SortOrder, string> = {
+  "price-asc": "cheapest first",
+  "price-desc": "most expensive first",
+  title: "A to Z",
+}
+
+/** Order a result set the way the shopper asked. An item with no readable price
+ * goes last either way, so a missing price never looks like the bargain. */
+export function orderHits(hits: SearchHit[], order: SortOrder): SearchHit[] {
+  const out = hits.slice()
+  if (order === "title") {
+    out.sort((a, b) => a.product.title.localeCompare(b.product.title))
+    return out
+  }
+  const dir = order === "price-asc" ? 1 : -1
+  out.sort((a, b) => {
+    const av = a.priceMinor ?? Number.MAX_SAFE_INTEGER
+    const bv = b.priceMinor ?? Number.MAX_SAFE_INTEGER
+    return (av - bv) * dir
+  })
+  return out
 }
 
 export const searchContract: Contract = {

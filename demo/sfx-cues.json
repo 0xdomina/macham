@@ -1,0 +1,20 @@
+{
+  "_note": "One cue per story turn, ~12 per minute, no identical sound back to back. Every cue carries a why; a cue that cannot justify itself in one clause gets deleted.",
+  "cues": [
+    { "t": 0.05,  "sound": "stamp", "db": -12, "why": "the thesis line lands on the first frame" },
+    { "t": 4.50,  "sound": "wipe",  "db": -13, "why": "the band carries us onto the storefront" },
+    { "t": 17.40, "sound": "tap",   "db": -18, "why": "the launcher is pressed and the panel opens" },
+    { "t": 20.40, "sound": "key",   "db": -19, "why": "the ask is committed" },
+    { "t": 21.70, "sound": "chime", "db": -14, "why": "the grounded answer lands — the film's payload" },
+    { "t": 33.60, "sound": "tap",   "db": -18, "why": "Add on a product card" },
+    { "t": 34.40, "sound": "hit",   "db": -10, "why": "the proposal is the second argument: one named item, one quantity" },
+    { "t": 42.10, "sound": "tap",   "db": -17, "why": "the human approves it" },
+    { "t": 45.60, "sound": "wipe",  "db": -14, "why": "the band carries us out of the product" },
+    { "t": 46.80, "sound": "stamp", "db": -11, "why": "the wordmark stamps the close" }
+  ],
+  "bed": [
+    { "notes": [164.81, 196.0, 246.94], "in": 0, "out": 21.0 },
+    { "notes": [130.81, 164.81, 196.0], "in": 18.5, "out": 41.4 },
+    { "notes": [146.83, 174.61, 220.0], "in": 39.0, "out": 53.8 }
+  ]
+}

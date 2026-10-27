@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harbor &amp; Pine — outdoor gear, small batches</title>
+<!--
+  THE HOST, NOT THE PRODUCT — but a designed one. This is the fabricated store
+  the film shoots: a real shop world (nav, hero, grid, field notes, sticky cart)
+  so the widget lands on something a shopper would actually open. The brand,
+  copy, colours, and geometry are invented (image generation is offline on this
+  machine, so the store's visual presence is built from type, colour blocks,
+  and shapes — no faked photography). The one thing NOT invented is the data:
+  every product row and every price is drawn from the committed fixture rows
+  (demo/store-fixture.ts) through the product's own priceLabel
+  (src/buyer/shop.ts:28-34) out of the bundle — the same three rows the widget
+  searches, so storefront and assistant can never disagree. See NOTES.md.
+
+  Film hooks (staging only, documented in NOTES.md):
+  - all host content lives inside <div class="store"> so the film's depth-of-
+    field pass can soften the shop behind the open panel; the widget mounts
+    outside .store and stays sharp.
+  - the cart badge answers the widget's onProposal callback — the host's own
+    behaviour per src/widget/assistant.ts:141 ("the host applies it through its
+    own cart rail"), never a claim that the assistant touched the cart itself.
+-->
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bone:#F6F3EC; --ink:#17191C; --pine:#1F3D34; --amber:#D98E36;
+    --slate:#5B6770; --line:#E4DECF; --card:#FFFFFF;
+  }
+  html,body{background:var(--bone);color:var(--ink);height:100%;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .store{height:100vh;overflow:hidden auto;display:flex;flex-direction:column}
+  a{color:inherit;text-decoration:none}
+
+  /* ---- sticky nav ---------------------------------------------------- */
+  .nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:28px;
+    padding:0 28px;height:64px;background:rgba(246,243,236,.92);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line)}
+  .nav .logo{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.06em;font-size:15px}
+  .nav .logo .mark{width:26px;height:26px;border-radius:7px;background:var(--pine);
+    display:grid;place-items:center;color:var(--bone);font-size:13px;font-weight:800}
+  .nav .links{display:flex;gap:22px;font-size:13.5px;font-weight:550;color:var(--slate)}
+  .nav .links b{color:var(--ink)}
+  .nav .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);
+    border-radius:999px;padding:7px 14px;font-size:12.5px;color:var(--slate)}
+  .search .mag{width:11px;height:11px;border:1.6px solid var(--slate);border-radius:50%;position:relative}
+  .search .mag::after{content:"";position:absolute;right:-4px;bottom:-3px;width:5px;height:1.6px;background:var(--slate);transform:rotate(45deg)}
+  .cart{display:flex;align-items:center;gap:9px;background:var(--ink);color:var(--bone);
+    border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:650}
+  .cart .badge{min-width:20px;height:20px;border-radius:999px;background:var(--amber);color:var(--ink);
+    display:grid;place-items:center;font-size:11.5px;font-weight:800;padding:0 4px}
+
+  /* ---- hero ----------------------------------------------------------- */
+  .hero{display:grid;grid-template-columns:7fr 5fr;gap:34px;padding:44px 28px 30px;align-items:stretch}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:750;
+    letter-spacing:.14em;color:var(--pine)}
+  .eyebrow::before{content:"";width:22px;height:2px;background:var(--amber)}
+  .hero h1{margin-top:14px;font-size:58px;line-height:1.02;letter-spacing:-.03em;font-weight:800}
+  .hero h1 em{font-style:normal;color:var(--pine)}
+  .hero p{margin-top:14px;max-width:44ch;font-size:15px;line-height:1.55;color:var(--slate)}
+  .buyrow{margin-top:22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .price{font-size:22px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .btn{border:1.5px solid var(--ink);border-radius:999px;padding:10px 20px;font-size:13.5px;font-weight:700}
+  .btn.solid{background:var(--ink);color:var(--bone)}
+  .swatches{display:flex;gap:7px;margin-left:4px}
+  .swatches i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(23,25,28,.25)}
+  .heroart{position:relative;border-radius:18px;background:var(--pine);overflow:hidden;min-height:300px}
+  .heroart .ridge{position:absolute;left:-8%;right:-8%;bottom:-30%;height:70%;background:#16302A;
+    border-radius:50% 50% 0 0}
+  .heroart .ridge2{position:absolute;left:-20%;right:30%;bottom:-34%;height:64%;background:#25473D;
+    border-radius:50% 50% 0 0}
+  .heroart .sun{position:absolute;top:26px;right:34px;width:54px;height:54px;border-radius:50%;background:var(--amber)}
+  .heroart .parka{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:150px;height:196px}
+  .heroart .parka .body{position:absolute;inset:34px 0 0 0;background:var(--bone);border-radius:26px 26px 34px 34px}
+  .heroart .parka .hood{position:absolute;left:34px;top:0;width:82px;height:52px;border-radius:44px 44px 0 0;background:var(--bone)}
+  .heroart .parka .zip{position:absolute;left:calc(50% - 1.5px);top:44px;bottom:14px;width:3px;background:var(--pine);border-radius:2px}
+  .heroart .parka .pocket{position:absolute;bottom:36px;width:34px;height:8px;border-radius:4px;background:var(--pine)}
+  .heroart .parka .pocket.l{left:22px}.heroart .parka .pocket.r{right:22px}
+  .heroart .tag{position:absolute;left:18px;bottom:16px;font-size:11px;font-weight:750;letter-spacing:.16em;color:var(--bone)}
+
+  /* ---- ticker strip ---------------------------------------------------- */
+  .strip{display:flex;gap:0;border-block:1px solid var(--line);background:var(--ink);color:var(--bone);
+    font-size:11.5px;font-weight:700;letter-spacing:.18em;padding:9px 0;overflow:hidden;white-space:nowrap}
+  .strip span{padding-inline:26px;opacity:.9}
+  .strip span::before{content:"—";color:var(--amber);margin-right:26px}
+
+  /* ---- product grid ----------------------------------------------------- */
+  .sec{padding:34px 28px 8px}
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+  .sechead h2{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .sechead small{font-size:12px;color:var(--slate);font-weight:600;letter-spacing:.08em}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    display:flex;flex-direction:column}
+  .tile .art{height:172px;position:relative;display:grid;place-items:center}
+  .tile .art .glyph{width:74px;height:96px;border-radius:14px;border:3px solid rgba(246,243,236,.85)}
+  .tile .art .disc{width:88px;height:88px;border-radius:50%;border:3px solid rgba(246,243,236,.9)}
+  .tile .art .flag{width:0;height:0;border-left:52px solid rgba(246,243,236,.9);border-bottom:34px solid transparent}
+  .tile .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .tile .n{font-size:15px;font-weight:750}
+  .tile .m{font-size:12.5px;color:var(--slate)}
+  .tile .row{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:10px}
+  .tile .p{font-size:14.5px;font-weight:800;font-variant-numeric:tabular-nums}
+  .tile .add{font-size:12px;font-weight:700;border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px}
+  .art.pine{background:var(--pine)} .art.slate{background:var(--slate)} .art.amber{background:var(--amber)}
+
+  /* ---- field notes (reviews — quotes only, no ratings) ------------------ */
+  .notes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .note{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .note .q{font-size:14px;line-height:1.5}
+  .note .q::before{content:"“";color:var(--amber);font-size:26px;font-weight:800;line-height:0;vertical-align:-8px;margin-right:2px}
+  .note .who{margin-top:12px;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--slate)}
+  .note .who b{color:var(--ink)}
+
+  /* ---- footer ------------------------------------------------------------ */
+  .foot{margin-top:34px;background:var(--ink);color:var(--bone);padding:34px 28px 26px;
+    display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:22px}
+  .foot .brand{font-size:17px;font-weight:800;letter-spacing:.05em}
+  .foot .brand p{margin-top:8px;font-size:12px;color:#B9C4BD;font-weight:400;letter-spacing:0}
+  .foot h4{font-size:11px;letter-spacing:.14em;color:#8FA096;margin-bottom:10px}
+  .foot a{display:block;font-size:12.5px;color:#DDE5DF;margin-bottom:7px}
+  .foot .fine{grid-column:1/-1;border-top:1px solid #2C2F2A;margin-top:8px;padding-top:14px;
+    font-size:11px;color:#7C857E}
+
+  /* ---- 390px: the same shop on a phone ---------------------------------- */
+  @media (max-width:520px){
+    .nav{gap:12px;padding:0 14px}
+    .nav .links,.search{display:none}
+    .cart{margin-left:auto}
+    .hero{grid-template-columns:1fr;padding:22px 14px;gap:20px}
+    .hero h1{font-size:38px}
+    .heroart{min-height:220px;order:-1}
+    .grid,.notes{grid-template-columns:1fr}
+    .sec{padding:20px 14px 4px}
+    .foot{grid-template-columns:1fr 1fr;padding:24px 14px 18px}
+  }
+
+  /* ---- film DoF hook (see header comment) -------------------------------- */
+  .store{--store-blur:0px;filter:blur(var(--store-blur));will-change:filter}
+</style>
+</head>
+<body>
+  <div class="store">
+    <nav class="nav">
+      <div class="logo"><span class="mark">H&amp;P</span>HARBOR&nbsp;&amp;&nbsp;PINE</div>
+      <div class="links"><b>Shop</b><a href="#">Collections</a><a href="#">Journal</a><a href="#">About</a></div>
+      <div class="right">
+        <div class="search"><span class="mag"></span>Search the catalogue</div>
+        <div class="cart">Bag <span class="badge" id="cart-count">0</span></div>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div>
+        <span class="eyebrow">AUTUMN LINE — BUILT IN SMALL BATCHES</span>
+        <h1>The Harbor <em>Parka.</em><br>Three layers.<br>Seam-sealed.</h1>
+        <p>Cut for the crossing and the commute alike. Field-tested on the north
+           shore until the stitching stopped being the argument.</p>
+        <div class="buyrow">
+          <span class="price" id="hero-price"></span>
+          <span class="btn solid">Add to bag</span>
+          <span class="btn">Look inside</span>
+          <span class="swatches"><i style="background:#1F3D34"></i><i style="background:#17191C"></i><i style="background:#D98E36"></i></span>
+        </div>
+      </div>
+      <div class="heroart">
+        <div class="sun"></div>
+        <div class="ridge2"></div>
+        <div class="ridge"></div>
+        <div class="parka"><div class="hood"></div><div class="body"></div><div class="zip"></div>
+          <div class="pocket l"></div><div class="pocket r"></div></div>
+        <div class="tag">FIELD TESTED — NORTH SHORE</div>
+      </div>
+    </header>
+
+    <div class="strip"><span>SMALL BATCH</span><span>FIELD TESTED</span><span>REPAIRED FOR LIFE</span><span>SHIPPED FROM THE DOCK</span></div>
+
+    <section class="sec">
+      <div class="sechead"><h2>Everything in stock</h2><small>CATALOGUE / ALL</small></div>
+      <div class="grid" id="host-catalog"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sechead"><h2>Field notes</h2><small>FROM WEARERS</small></div>
+      <div class="notes">
+        <div class="note"><div class="q">Took the parka across the sound in sleet. Dry, quiet, no complaints from the stitching or me.</div><div class="who"><b>M. OKONKWO</b> — PORT ANGELES</div></div>
+        <div class="note"><div class="q">The shell lives in my kayak hatch now. Packs to nothing, breathes when I don't.</div><div class="who"><b>R. LINDQVIST</b> — BAINBRIDGE</div></div>
+        <div class="note"><div class="q">Bought the pennant as a joke for the shop wall. It is the best thing in there.</div><div class="who"><b>D. ADEYEMI</b> — SEATTLE</div></div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <div class="brand">HARBOR &amp; PINE<p>Outdoor gear, small batches. Built on the dock, tested on the water.</p></div>
+      <div><h4>SHOP</h4><a href="#">Outerwear</a><a href="#">Shells</a><a href="#">Accessories</a></div>
+      <div><h4>HELP</h4><a href="#">Shipping</a><a href="#">Returns</a><a href="#">Repairs</a></div>
+      <div><h4>HOUSE</h4><a href="#">Journal</a><a href="#">Stockists</a><a href="#">Contact</a></div>
+      <div class="fine">© HARBOR &amp; PINE — A FABRICATED STOREFRONT BUILT FOR THIS FILM. PRICES ARE THE SAME CATALOGUE ROWS THE ASSISTANT READS.</div>
+    </footer>
+  </div>
+
+  <script src="/build/macham-film.js"></script>
+  <script>
+    // A store owner's two lines: the bundle, then one init call with a publishable
+    // key. This is the real integration shape — the tag alone does nothing
+    // (src/loader.ts:34-43 finds the script tag but never auto-initialises).
+    const F = window.MachamFilm;
+    const glyphFor = (t) =>
+      t === "Harbor Parka" ? '<div class="glyph"></div>'
+      : t === "Trail Shell" ? '<div class="disc"></div>'
+      : '<div class="flag"></div>';
+    const artFor = (t) =>
+      t === "Harbor Parka" ? "pine" : t === "Trail Shell" ? "slate" : "amber";
+
+    document.getElementById("hero-price").textContent =
+      F.priceLabel(F.FILM_PRODUCTS.find((p) => p.title === "Harbor Parka"));
+
+    document.getElementById("host-catalog").innerHTML = F.FILM_PRODUCTS.map((p) => `
+      <article class="tile">
+        <div class="art ${artFor(p.title)}">${glyphFor(p.title)}</div>
+        <div class="body">
+          <div class="n">${p.title}</div>
+          <div class="m">${p.description || ""}</div>
+          <div class="row"><span class="p">${F.priceLabel(p)}</span><span class="add">Add to bag</span></div>
+        </div>
+      </article>`).join("");
+
+    window.__proposal = null;
+    F.mountStorefront(document.body, (p) => {
+      // The host applies the proposal through its own cart rail — the documented
+      // seam (src/widget/assistant.ts:141). The badge is the store's doing, not
+      // the assistant's; NOTES.md records the boundary.
+      window.__proposal = p;
+      const b = document.getElementById("cart-count");
+      b.textContent = String((parseInt(b.textContent, 10) || 0) + (p.qty || 1));
+    });
+    window.__FILM_MOUNTED = true;
+  </script>
+</body>
+</html>

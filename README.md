@@ -94,7 +94,7 @@ npm test        # node --test ./test/*.mjs
 ### Run
 
 ```bash
-cp .env.example .env                       # then set GROQ_API_KEY or DEEPSEEK_API_KEY
+cp .env.example .env                       # brand operator only: the platform provides the model keys
 node server/keys.mjs mint --env test --orders   # the mch_ secret prints once
 node server/assist.mjs                     # listens on ASSIST_PORT, default 8787
 curl http://localhost:8787/health
@@ -119,9 +119,9 @@ Copy `.env.example` to `.env`, which is git-ignored. The gateway reads the file 
 
 | Variable | What it does | Value |
 |---|---|---|
-| `GROQ_API_KEY` | Primary model brain, server-side only. | |
+| `GROQ_API_KEY` | The brand's model key, server-side only. Merchants never set one; they hold only an `mch_` key. | |
 | `GROQ_MODEL` | Model id served by Groq. | |
-| `DEEPSEEK_API_KEY` | Second brain; the router fails over to it. | |
+| `DEEPSEEK_API_KEY` | The brand's second brain; the router fails over to it. | |
 | `MACHAM_API_KEY` | The store's own `mch_` key for the loader and SDK. | |
 | `PAYPAL_CLIENT_ID` | PayPal Orders v2 credential. | |
 | `PAYPAL_CLIENT_SECRET` | PayPal Orders v2 credential. | |
