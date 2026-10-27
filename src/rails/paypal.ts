@@ -19,6 +19,8 @@ export type OrderRequest = {
   invoiceId: string
   intent?: "CAPTURE" | "AUTHORIZE"
   description?: string
+  /** Stable key (derived from the cart), so a retry cannot create a second order. */
+  idempotencyKey?: string
 }
 
 export type PayPalOrder = {
@@ -140,7 +142,7 @@ export class PayPalRail {
           ],
         }),
       },
-      PayPalRail.idempotencyKey(),
+      input.idempotencyKey ? `${input.idempotencyKey}:create` : PayPalRail.idempotencyKey(),
       fetcher
     )
     const approveUrl = (body.links ?? []).find(
@@ -158,7 +160,8 @@ export class PayPalRail {
     orderId: string,
     finalMinor: number,
     authorizedMinor: number,
-    fetcher: typeof fetch = fetch
+    fetcher: typeof fetch = fetch,
+    idempotencyKey?: string
   ): Promise<any> {
     if (!withinCaptureTolerance(authorizedMinor, finalMinor)) {
       throw new Error("Outside capture tolerance. Re-quote.")
@@ -166,7 +169,7 @@ export class PayPalRail {
     return this.call(
       `/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
       { method: "POST", body: "{}" },
-      PayPalRail.idempotencyKey(),
+      idempotencyKey ? `${idempotencyKey}:capture` : PayPalRail.idempotencyKey(),
       fetcher
     )
   }

@@ -1,88 +1,192 @@
 <!doctype html>
-<html lang="en" id="top">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#f4f2ea" />
-    <title>Macham. A buyer agent for any store</title>
-    <meta name="description" content="Drop one line into a fixed-price store. Macham reads the live catalog, answers shoppers in plain language, and proposes a cart. A person approves before anything is paid through PayPal." />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Macham" />
-    <meta property="og:title" content="Macham. A buyer agent for any store" />
-    <meta property="og:description" content="One line gives a fixed-price store an agent that reads its catalog, proposes a cart, and waits for a person to approve before PayPal charges." />
-    <meta name="twitter:card" content="summary" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div class="top">
-      <div class="shell">
-        <a class="logo" href="#top">Macham</a>
-        <nav aria-label="Primary">
-          <a class="hide-sm" href="#what">What it is</a>
-          <a href="#integrate">Integrate</a>
-          <a class="hide-sm" href="#guardrails">Guardrails</a>
-          <a href="https://www.postman.com/domina9193-4264801/macham" target="_blank" rel="noopener noreferrer">API docs</a>
-          <a class="btn solid-ink" href="#integrate">Start integrating</a>
-        </nav>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Macham: shop with an agent, approve one total</title>
+<meta name="description" content="Macham is a cart for AI agents. Ask in plain words, review one cart, approve, and PayPal captures the exact total.">
+<meta property="og:title" content="Macham: ask, review, approve">
+<meta property="og:description" content="An agent builds the cart. You approve one total. PayPal captures that exact amount.">
+<meta name="theme-color" content="#0b1020">
+<style>
+:root{
+  --bg:#0b1020;--ink:#eef2ff;--mute:#a7b0cc;--line:rgba(255,255,255,.14);
+  --glass:rgba(255,255,255,.08);--glass-2:rgba(255,255,255,.14);
+  --accent:#7cf2d4;--accent-2:#7aa7ff;--warn:#ffd28a;
+  --r:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
+  background:radial-gradient(900px 600px at 10% -10%,#23325f 0%,transparent 60%),
+             radial-gradient(800px 600px at 110% 10%,#13455a 0%,transparent 55%),
+             linear-gradient(180deg,#0b1020,#070b17 60%,#0b1020);
+  min-height:100vh;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;z-index:-1;width:520px;height:520px;border-radius:50%;filter:blur(90px);opacity:.45;pointer-events:none}
+body::before{background:#4b6bff;top:-160px;left:-120px}
+body::after{background:#2ee6c0;bottom:-200px;right:-160px}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+.glass{background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.04));
+  border:1px solid var(--line);border-radius:var(--r);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:0 20px 60px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12)}
+header.top{position:sticky;top:12px;z-index:20;margin:14px auto 0;max-width:1080px;padding:10px 14px;display:flex;align-items:center;gap:14px;
+  border-radius:999px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);background:rgba(12,18,36,.55);border:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px;text-decoration:none}
+.logo i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:inline-block}
+nav.menu-top{margin-left:auto;display:flex;gap:6px;align-items:center}
+nav.menu-top a{text-decoration:none;color:var(--mute);padding:8px 12px;border-radius:999px;font-size:14px}
+nav.menu-top a:hover{color:var(--ink);background:var(--glass)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--glass);color:var(--ink);
+  padding:12px 18px;border-radius:999px;font:600 15px/1 system-ui,sans-serif;cursor:pointer;text-decoration:none;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:transform .15s,background .15s}
+.btn:hover{background:var(--glass-2);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#56d6ff);color:#04201a;border-color:transparent;font-weight:700}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.hero{padding:70px 0 40px;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--mute);padding:6px 12px;border-radius:999px;background:var(--glass);border:1px solid var(--line)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+h1{font-size:clamp(36px,5.2vw,58px);line-height:1.04;letter-spacing:-1.2px;margin:18px 0 14px;font-weight:800}
+h1 span{background:linear-gradient(120deg,var(--accent),#7aa7ff 60%,#c4a8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:46ch;margin:0 0 26px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.preview{padding:18px;position:relative}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+.chip{font-size:12px;padding:5px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--line);color:var(--mute)}
+.section{padding:56px 0}
+.kick{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);font-weight:700}
+h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.6px;margin:8px 0 10px;line-height:1.1}
+.sub{color:var(--mute);margin:0 0 26px;max-width:60ch}
+.stories{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.story{padding:26px}
+.story h3{margin:4px 0 16px;font-size:20px}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:12px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;padding:12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(124,242,212,.25),rgba(122,167,255,.25));border:1px solid var(--line)}
+.ico svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.steps b{display:block;font-size:15px}
+.steps small{color:var(--mute);font-size:13px}
+.flow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px;color:var(--mute);font-size:13px}
+.flow span{padding:6px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--line);color:var(--ink)}
+.flow em{font-style:normal;opacity:.5}
+.snippet{position:relative;padding:18px 18px 18px;font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe0ff;overflow:auto;border-radius:var(--r)}
+.copy{position:absolute;top:12px;right:12px;font:600 12px system-ui,sans-serif;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--glass-2);color:var(--ink);cursor:pointer}
+#install-code{white-space:pre;display:block}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{padding:22px}
+.card .ico{margin-bottom:12px}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0;color:var(--mute);font-size:14px}
+footer{padding:40px 0 60px;color:var(--mute);font-size:13px;text-align:center}
+/* chat modal */
+.modal-bg{position:fixed;inset:0;z-index:50;background:rgba(3,6,14,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:18px}
+.modal-bg.open{display:flex}
+.modal{width:min(460px,100%);max-height:calc(100vh - 36px);display:flex;flex-direction:column;overflow:hidden;padding:0}
+.modal-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.modal-head b{font-size:15px}
+.modal-head .x{margin-left:auto;border:0;background:transparent;color:var(--mute);font-size:22px;cursor:pointer;line-height:1}
+.thread{padding:16px 18px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.bub{max-width:82%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.45}
+.bub.agent{align-self:flex-start;background:rgba(255,255,255,.1);border:1px solid var(--line);border-bottom-left-radius:6px}
+.bub.user{align-self:flex-end;background:linear-gradient(135deg,rgba(124,242,212,.9),rgba(86,214,255,.9));color:#04201a;border-bottom-right-radius:6px;font-weight:600}
+.cart{align-self:stretch;padding:14px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.cart .row{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.cart .row:last-of-type{border-bottom:0}
+.cart .tot{display:flex;justify-content:space-between;font-weight:800;font-size:18px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.cart .meta{color:var(--mute);font-size:12px;margin-top:6px}
+.approve{padding:14px 18px 18px;border-top:1px solid var(--line)}
+.approve .btn{width:100%;justify-content:center;font-size:16px;padding:14px}
+.approve .note{color:var(--mute);font-size:12px;margin:10px 0 0;text-align:center;min-height:1em}
+#settled{margin:0 18px 16px;padding:12px;border-radius:14px;background:rgba(124,242,212,.12);border:1px solid rgba(124,242,212,.35);font-size:13px}
+#settled[hidden]{display:none}
+.js .rise{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.js .rise.in{opacity:1;transform:none}
+@media (max-width:860px){.hero{grid-template-columns:1fr;padding-top:40px}.stories,.cols{grid-template-columns:1fr}nav.menu-top a.hide{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top glass">
+    <a class="logo" href="#top"><i></i>Macham</a>
+    <nav class="menu-top" aria-label="Primary">
+      <a class="hide" href="#buyer">Buyer</a>
+      <a class="hide" href="#merchant">Merchant</a>
+      <a class="hide" href="#integrate">Install</a>
+      <button class="btn primary" type="button" data-open-chat>Try the agent</button>
+    </nav>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="rise">
+      <span class="eyebrow"><span class="dot"></span> PayPal orders v2</span>
+      <h1 id="hero-copy">Ask. Review. <span>Approve one total.</span></h1>
+      <p class="lead">An agent builds your cart from the store. You see one total. PayPal captures exactly that amount, and nothing else.</p>
+      <div class="ctas">
+        <button class="btn primary" type="button" data-open-chat id="cta-copy">Try the chat</button>
+        <a class="btn" href="#integrate">Add to my store</a>
       </div>
     </div>
 
-    <main>
-      <div class="shell">
-        <header class="hero">
-          <div class="hero-copy rise">
-            <h1 class="d1">Paste one line.<br />Approve the cart.</h1>
-            <p class="sub d2">Macham is a buyer agent for stores with fixed prices. It reads your real catalog, answers shoppers in plain language, and proposes a cart, then waits for a person to approve before PayPal charges.</p>
-            <div class="hero-actions d3">
-              <button class="btn" type="button" id="hero-copy" data-copy>Copy the snippet</button>
-              <a class="textlink" href="#how">See how it works</a>
-            </div>
-          </div>
+    <div class="glass preview rise" aria-label="Preview of the cart modal">
+      <div class="chip-row"><span class="chip">Sample store</span><span class="chip">2 items</span><span class="chip">PayPal</span></div>
+      <div class="cart" style="margin-top:14px">
+        <div class="row"><span>Tee, black, M</span><span>2,500.00 NGN</span></div>
+        <div class="row"><span>Cap, olive</span><span>800.00 NGN</span></div>
+        <div class="tot"><span>Total</span><span>3,300.00 NGN</span></div>
+        <div class="meta">Amount set by the store. Captured once you approve.</div>
+      </div>
+    </div>
+  </section>
 
-          <div class="hero-ui preview rise" data-ui aria-hidden="true">
-            <div class="ui-store">
-              <div class="ui-store-name">Ada's Store</div>
-              <div class="ui-grid">
-                <div class="ui-card"><div class="ui-thumb"></div><div class="ui-name">Harbor Parka</div><div class="ui-price">$42.00</div></div>
-                <div class="ui-card"><div class="ui-thumb"></div><div class="ui-name">Trail Shell</div><div class="ui-price">$46.50</div></div>
-                <div class="ui-card"><div class="ui-thumb"></div><div class="ui-name">Field Jacket</div><div class="ui-price">$49.00</div></div>
-              </div>
-            </div>
-            <div class="ui-panel">
-              <div class="ui-inner">
-                <div class="ui-proposal">
-                  <div class="head"><span>Trail Shell</span><span>$46.50</span></div>
-                  <div class="note">Nothing is charged until a person approves.</div>
-                  <button class="ui-approve" type="button" tabindex="-1">Approve $46.50</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
+  <section class="section rise" id="buyer">
+    <div class="kick">Buyer</div>
+    <h2>Four taps from a question to paid.</h2>
+    <p class="sub">The shopper never fills a cart by hand.</p>
+    <div class="stories">
+      <div class="glass story">
+        <h3>Ask the agent</h3>
+        <ol class="steps">
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><div><b>Open the chat</b><small>Browse the store, tap the button.</small></div></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/></svg></span><div><b>Describe what you want</b><small>In plain words, like a friend.</small></div></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 3H3"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></span><div><b>Get a cart</b><small>Real items, real prices from the store.</small></div></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg></span><div><b>Approve one total</b><small>Done. Receipt in the chat.</small></div></li>
+        </ol>
+        <div class="flow"><span>Browse</span><em>&rarr;</em><span>Chat</span><em>&rarr;</em><span>Cart</span><em>&rarr;</em><span>Approve</span></div>
       </div>
 
-      <section class="band alt" id="what">
-        <div class="shell rise">
-          <h2 class="claim">A buyer, not a seller.</h2>
-          <p class="intro-lead">Shoppers rarely wait on an email reply, and a support queue that answers hours later sells nothing. Macham answers from the store's own catalog the moment a question arrives, orders the price the store set, and stops for a human before any money moves.</p>
-          <div class="four">
-            <p><span class="run">Buyer only.</span> Macham reads a store and places an order at the price that store set. It does not haggle, and there is no seller console.</p>
-            <p><span class="run">One key.</span> Your store embeds a single publishable key that names and meters it. It is safe in the browser, and the model keys stay on our server.</p>
-            <p><span class="run">Any store.</span> Shopify, WooCommerce and JSON-LD catalogs need no store-side code; the reader picks the lane. A rare backend adds a small adapter.</p>
-            <p><span class="run">You approve.</span> Search and compare run on their own. A cart is a proposal, and a person approves it before anything is paid.</p>
-          </div>
-        </div>
-      </section>
+      <div class="glass story" id="merchant">
+        <h3>Sell through the agent</h3>
+        <ol class="steps">
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M4 21h16"/></svg></span><div><b>Upload your catalog</b><small>One CSV: title, price, currency.</small></div></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/><circle cx="12" cy="12" r="9"/></svg></span><div><b>We validate it</b><small>Bad rows are shown, not guessed.</small></div></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M10 14l4-4M8 16l-2 2a3 3 0 01-4-4l2-2M16 8l2-2a3 3 0 014 4l-2 2"/></svg></span><div><b>Get payable links</b><small>Each item is checked on the server.</small></div></li>
+          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V8M10 20V4M16 20v-8M22 20H2"/></svg></span><div><b>See your orders</b><small>Every capture, per store.</small></div></li>
+        </ol>
+        <div class="flow"><span>CSV</span><em>&rarr;</em><span>Check</span><em>&rarr;</em><span>Links</span><em>&rarr;</em><span>Orders</span></div>
+      </div>
+    </div>
+  </section>
 
-      <section class="band" id="integrate">
-        <div class="shell rise">
-          <h2 class="claim">Live in a paste, with a key of your own.</h2>
-          <p class="lead">Add one line before the closing body tag and hand Macham your store's key. The intelligence runs on our server and is metered per key.</p>
-          <div class="snippet" style="margin:32px 0 56px">
-            <button class="copy" type="button" id="code-copy" data-copy>Copy</button>
-            <code id="install-code">&lt;script src="https://YOUR-MACHAM-HOST/macham.js" data-key="mch_live_..." defer&gt;&lt;/script&gt;
+  <section class="section rise" id="guardrails">
+    <div class="kick">Why it is safe</div>
+    <h2>The store sets the price. Not the browser.</h2>
+    <div class="cols" style="margin-top:22px">
+      <div class="glass card"><span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span><h3>Server-priced</h3><p>Every amount comes from the store's own catalog. A tampered price is refused.</p></div>
+      <div class="glass card"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></span><h3>Capture matches</h3><p>PayPal captures exactly the approved total, then the order is checked again.</p></div>
+      <div class="glass card"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><h3>Per store, kept</h3><p>Orders are scoped to each store key and saved, so a retry never charges twice.</p></div>
+    </div>
+  </section>
+
+  <section class="section rise" id="integrate">
+    <div class="kick">Install</div>
+    <h2>One script tag. Your store keeps its checkout.</h2>
+    <p class="sub">Paste this before the closing body tag.</p>
+    <div class="glass snippet">
+      <button class="copy" type="button" id="code-copy" data-copy>Copy</button>
+      <code id="install-code">&lt;script src="https://YOUR-MACHAM-HOST/macham.js" data-key="mch_live_..." defer&gt;&lt;/script&gt;
 &lt;script&gt;
   Macham.init({
     apiKey: "mch_live_...",
@@ -90,114 +194,49 @@
     assistUrl: "https://YOUR-MACHAM-HOST",
   })
 &lt;/script&gt;</code>
-          </div>
+    </div>
+  </section>
 
-          <div class="menu">
-            <div class="group">
-              <h3>Paste it in</h3>
-              <div class="row"><span class="name">Snippet</span><span class="leader"></span><span class="value">one script tag</span></div>
-              <p class="row-desc">Any storefront with HTML access. No rebuild, no backend change.</p>
-              <div class="row"><span class="name">Extension</span><span class="leader"></span><span class="value">no store code</span></div>
-              <p class="row-desc">Mounts the same widget on stores that never integrate. Set the key once.</p>
-              <div class="row"><span class="name">SDK</span><span class="leader"></span><span class="value">npm, custom UI</span></div>
-              <p class="row-desc">Bring your own reader, or use the universal lane.</p>
-            </div>
+  <footer>Macham. PayPal sandbox by default.</footer>
+</div>
 
-            <div class="group">
-              <h3>Bring your key</h3>
-              <div class="row"><span class="name">Publishable key</span><span class="leader"></span><span class="value">mch_ in the browser</span></div>
-              <p class="row-desc">Names and meters your store. Safe to expose to shoppers.</p>
-              <div class="row"><span class="name">Model keys</span><span class="leader"></span><span class="value">server only</span></div>
-              <p class="row-desc">Never sent to the store or to the browser.</p>
-            </div>
-
-            <div class="group">
-              <h3>Reads, zero code</h3>
-              <div class="row"><span class="name">Shopify, Woo, JSON-LD</span><span class="leader"></span><span class="value">auto-detected</span></div>
-              <p class="row-desc">The reader chooses the catalog lane from your store.</p>
-              <div class="row"><span class="name">A backend that fits none</span><span class="leader"></span><span class="value">small adapter</span></div>
-              <p class="row-desc">Stores outside a lane implement a few methods once.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="band alt" id="how">
-        <div class="shell rise">
-          <h2 class="claim">Ask, compare, then approve.</h2>
-          <div class="flow">
-            <div class="turn">
-              <p class="say"><b>A shopper asks in plain words.</b> Macham reads the live catalog and answers with the store's real prices, never an invented one.</p>
-            </div>
-            <div class="flow open" data-ui>
-              <div class="ui-store">
-                <div class="ui-store-name">Ada's Store</div>
-                <div class="ui-grid">
-                  <div class="ui-card"><div class="ui-thumb"></div><div class="ui-name">Harbor Parka</div><div class="ui-price">$42.00</div></div>
-                  <div class="ui-card"><div class="ui-thumb"></div><div class="ui-name">Trail Shell</div><div class="ui-price">$46.50</div></div>
-                  <div class="ui-card"><div class="ui-thumb"></div><div class="ui-name">Field Jacket</div><div class="ui-price">$49.00</div></div>
-                </div>
-              </div>
-              <div class="ui-panel">
-                <div class="ui-inner">
-                  <div class="ui-title">Macham</div>
-                  <p class="ui-ask">warm jackets under fifty</p>
-                  <p class="ui-say">Three offers at the store's prices.</p>
-                  <ul class="ui-offers">
-                    <li><span>Harbor Parka</span><span class="p">$42.00</span></li>
-                    <li><span>Trail Shell</span><span class="p">$46.50</span></li>
-                    <li><span>Field Jacket</span><span class="p">$49.00</span></li>
-                  </ul>
-                  <div class="ui-proposal">
-                    <div class="head"><span>Trail Shell</span><span>$46.50</span></div>
-                    <div class="note" id="prop-note">Fixed price. Nothing is charged yet. You approve.</div>
-                    <button class="ui-approve" type="button" id="approve">Approve $46.50</button>
-                    <p class="ui-settled" id="settled" hidden>Paid $46.50 through PayPal. Settlement anchored to the Rialo audit trail.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="band soot" id="guardrails">
-        <div class="shell rise">
-          <h2 class="claim">Nothing moves on its own.</h2>
-          <p class="lead">The rails are the product. Each guarantee is a step a shopper cannot skip and a store can read back.</p>
-          <div class="rails" style="margin-top:48px">
-            <div class="rail"><h3>A locked total</h3><p>The approved amount is what Macham asks PayPal to capture, within tolerance.</p></div>
-            <div class="rail"><h3>Approve, then pay</h3><p>PayPal Orders v2 runs create, approve, authorize, capture. Nothing is captured before a person accepts.</p></div>
-            <div class="rail"><h3>A browser is never proof</h3><p>A shopper's own claim of success does not count. Only the settled order does.</p></div>
-            <div class="rail"><h3>Settled, then anchored</h3><p>Every settlement is written to the Rialo audit trail you can read back. If it cannot be verified, the record fails closed.</p></div>
-            <div class="rail"><h3>Your prices, your rules</h3><p>Macham orders the price the store lists. It does not negotiate, and it never edits your catalog.</p></div>
-            <div class="rail"><h3>Your data stays put</h3><p>Reads are scoped to your own catalog, and one store's data does not cross to another.</p></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="cta">
-        <div class="shell rise">
-          <p class="line">Give your store a buyer that asks before it acts.</p>
-          <div class="cta-actions">
-            <button class="btn" type="button" id="cta-copy" data-copy>Copy the snippet</button>
-            <a class="textlink" href="https://www.postman.com/domina9193-4264801/macham" target="_blank" rel="noopener noreferrer">Read the API reference</a>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="shell">
-        <span class="mark">Macham</span>
-        <span>Buyer agent for fixed-price stores.</span>
-        <a href="#what">What it is</a>
-        <a href="#integrate">Integrate</a>
-        <a href="https://www.postman.com/domina9193-4264801/macham" target="_blank" rel="noopener noreferrer">API reference</a>
-        <span>MIT</span>
+<!-- Chat modal: the buyer's whole flow in one glass panel -->
+<div class="modal-bg" id="chat" role="dialog" aria-modal="true" aria-labelledby="chat-title">
+  <div class="glass modal">
+    <div class="modal-head">
+      <span class="logo"><i></i></span>
+      <b id="chat-title">Macham agent</b>
+      <button class="x" type="button" aria-label="Close" data-close-chat>&times;</button>
+    </div>
+    <div class="thread">
+      <div class="bub agent">What do you need from Tee Lab?</div>
+      <div class="bub user">Two black tees, medium, and an olive cap.</div>
+      <div class="bub agent">Here is your cart. Totals come from the store.</div>
+      <div class="cart" aria-label="Cart summary">
+        <div class="row"><span>Tee, black, M x2</span><span>5,000.00 NGN</span></div>
+        <div class="row"><span>Cap, olive x1</span><span>800.00 NGN</span></div>
+        <div class="tot"><span>Total</span><span>5,800.00 NGN</span></div>
+        <div class="meta">Nothing is charged until you approve.</div>
       </div>
-    </footer>
+    </div>
+    <div class="approve">
+      <button class="btn primary" id="approve" type="button">Approve 5,800.00 NGN</button>
+      <p class="note" id="prop-note">You approve this exact total.</p>
+    </div>
+    <div id="settled" hidden>Captured. Your receipt is in the chat.</div>
+  </div>
+</div>
 
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<script>
+(function(){
+  var modal=document.getElementById("chat");
+  function open(){modal.classList.add("open")}
+  function close(){modal.classList.remove("open")}
+  document.querySelectorAll("[data-open-chat]").forEach(function(b){b.addEventListener("click",open)});
+  document.querySelector("[data-close-chat]").addEventListener("click",close);
+  modal.addEventListener("click",function(e){if(e.target===modal)close()});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")close()});
+})();
+</script>
+</body>
 </html>

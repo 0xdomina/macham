@@ -39,6 +39,7 @@ const { Channel3Client } = await import(DIST + "catalog/channel3.js")
 const { ElasticCatalog } = await import(DIST + "catalog/elastic.js")
 const { runCapability, capabilityNames } = await import("./capabilities.mjs")
 const { PayPalRail, withinCaptureTolerance } = await import(DIST + "rails/paypal.js")
+const { OrderLedger, OrderError, createPricedOrder, captureStoredOrder, publicOrder } = await import("./orders.mjs")
 const { anchorSettlement, readSettlementAudit, settlementNetwork, settlementWritesEnabled, anchorEventFromBody } = await import("./audit.mjs")
 
 const PORT = Number(process.env.ASSIST_PORT ?? "8787")
@@ -81,7 +82,7 @@ if (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
     console.log(JSON.stringify({ t: new Date().toISOString(), msg: "PayPal not configured.", error: String(e?.message ?? e) }))
   }
 }
-const orders = new Map()
+const orderLedger = new OrderLedger(process.env.ORDERS_PATH ?? "./data/orders.json")
 
 function log(id, method, path, status, ms, extra) {
   console.log(JSON.stringify({ t: new Date().toISOString(), id, method, path, status, ms, ...extra }))
@@ -109,10 +110,21 @@ function currencyCode(v) {
   return typeof v === "string" && /^[A-Z]{3}$/.test(v.toUpperCase())
 }
 
+async function resolveCatalogProduct(storeUrl, id) {
+  const origin = publicStoreOrigin(storeUrl)
+  if (!origin || !(await originResolvesPublic(origin))) throw new OrderError(400, "Store link not allowed.")
+  const { UniversalAdapter } = await import(DIST + "adapters/universal.js")
+  const store = new UniversalAdapter(origin, guardedFetch, { timeoutMs: 8000 })
+  return store.getProduct(id)
+}
+
+const orderDeps = () => ({ ledger: orderLedger, paypal, resolveProduct: resolveCatalogProduct })
+
 async function handleOrder(req, done, { record, orderPath }) {
   if (!paypal) return done(503, { error: "PayPal is not configured on this server." })
   if (!record.scopes.orders) return done(403, { error: "Key lacks orders scope." })
   if (!limiter.take(record.fingerprint + ":orders")) return done(429, { error: "Too many order requests. Slow down." })
+  const tenant = record.fingerprint
   const orderId = orderPath[1] ? decodeURIComponent(orderPath[1]) : ""
   const action = orderPath[2] || ""
   let body = {}
@@ -126,33 +138,15 @@ async function handleOrder(req, done, { record, orderPath }) {
   }
   try {
     if (!orderId && req.method === "POST") {
-      if (!moneyMinor(body.amountMinor)) return done(400, { error: "amountMinor must be positive integer minor units." })
-      if (!currencyCode(body.currency)) return done(400, { error: "currency must be a 3-letter code." })
-      if (typeof body.invoiceId !== "string" || !body.invoiceId.trim()) return done(400, { error: "invoiceId is required." })
-      const intent = body.intent === "AUTHORIZE" ? "AUTHORIZE" : "CAPTURE"
-      const order = await paypal.createOrder({
-        amountMinor: body.amountMinor,
-        currency: body.currency.toUpperCase(),
-        invoiceId: body.invoiceId.trim(),
-        intent,
-        description: typeof body.description === "string" ? body.description.slice(0, 120) : undefined,
-      })
-      orders.set(order.id, {
-        amountMinor: body.amountMinor,
-        currency: body.currency.toUpperCase(),
-        invoiceId: body.invoiceId.trim(),
-        intent,
-        status: order.status,
-        createdAt: Date.now(),
-      })
-      return done(200, { order, paypal: PAYPAL_ENV })
+      const out = await createPricedOrder({ deps: orderDeps(), tenant, body })
+      return done(out.status, { ...out.body, paypal: PAYPAL_ENV })
     }
     if (!orderId) return done(404, { error: "Order id needed." })
-    const local = orders.get(orderId)
+    const local = orderLedger.get(orderId, tenant)
     if (!local) return done(404, { error: "Order not found on this server." })
     if (req.method === "GET" && !action) {
       const order = await paypal.getOrder(orderId)
-      return done(200, { order, local })
+      return done(200, { order, local: publicOrder(local) })
     }
     if (req.method !== "POST") return done(404, { error: "Unknown order action." })
 
@@ -162,55 +156,38 @@ async function handleOrder(req, done, { record, orderPath }) {
       if (!order.authorizationId) return done(502, { error: "PayPal returned no authorization id." })
       local.authorizationId = order.authorizationId
       local.status = order.status
-      orders.set(orderId, local)
-      return done(200, { order, local })
+      orderLedger.put(local)
+      return done(200, { order, local: publicOrder(local) })
     }
     if (action === "capture") {
-      const finalMinor = body.finalMinor == null ? local.amountMinor : body.finalMinor
-      if (!moneyMinor(finalMinor)) return done(400, { error: "finalMinor must be positive integer minor units." })
-      if (!withinCaptureTolerance(local.amountMinor, finalMinor)) return done(409, { error: "Outside capture tolerance. Re-quote." })
-      let capture
-      if (local.intent === "AUTHORIZE") {
-        if (!local.authorizationId) return done(409, { error: "Authorize the order before capturing." })
-        capture = await paypal.captureAuthorization(local.authorizationId, finalMinor, local.currency)
-      } else {
-        capture = await paypal.captureOrder(orderId, finalMinor, local.amountMinor)
-      }
-      const captured = capture?.purchase_units?.[0]?.payments?.captures?.[0]
-      local.status = capture?.status ?? "COMPLETED"
-      local.captureId = captured?.id ?? local.captureId
-      local.capturedMinor = finalMinor
-      // Best-effort on-chain proof. anchorSettlement never throws and never
-      // blocks the capture: a missing key or unreachable chain yields null.
-      const audit = await anchorSettlement({
-        kind: "paypal-captured",
-        ref: orderId,
-        actor: local.invoiceId,
-        payload: { amountMinor: finalMinor, currency: local.currency },
+      const out = await captureStoredOrder({
+        deps: orderDeps(),
+        tenant,
+        orderId,
+        body,
+        anchor: (ev) => anchorSettlement(ev),
       })
-      local.auditSignature = audit.signature
-      orders.set(orderId, local)
-      return done(200, { capture, local, audit })
+      return done(out.status, out.body)
     }
     if (action === "void") {
       if (!local.authorizationId) return done(409, { error: "No authorization to void." })
       const out = await paypal.voidAuthorization(local.authorizationId)
       local.status = "VOIDED"
-      orders.set(orderId, local)
-      return done(200, { void: out, local })
+      orderLedger.put(local)
+      return done(200, { void: out, local: publicOrder(local) })
     }
     if (action === "refund") {
-      const captureId = String(body.captureId || local.captureId || "").trim()
+      const captureId = String(local.captureId || "").trim()
       if (!captureId) return done(409, { error: "No capture to refund." })
-      const amountMinor = body.amountMinor == null ? (local.capturedMinor ?? local.amountMinor) : body.amountMinor
-      if (!moneyMinor(amountMinor)) return done(400, { error: "amountMinor must be positive integer minor units." })
+      const amountMinor = local.capturedMinor ?? local.amountMinor
       const out = await paypal.refundCapture(captureId, amountMinor, local.currency)
       local.refundedMinor = amountMinor
-      orders.set(orderId, local)
-      return done(200, { refund: out, local })
+      orderLedger.put(local)
+      return done(200, { refund: out, local: publicOrder(local) })
     }
     return done(404, { error: "Unknown order action." })
   } catch (e) {
+    if (e instanceof OrderError) return done(e.status, { error: e.message })
     return done(502, { error: String(e?.message ?? e).slice(0, 300) })
   }
 }
