@@ -81,7 +81,9 @@ h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.6px;margin:8px 0 10px;line-
 .card p{margin:0;color:var(--mute);font-size:14px}
 footer{padding:40px 0 60px;color:var(--mute);font-size:13px;text-align:center}
 /* chat modal */
-.modal-bg{position:fixed;inset:0;z-index:50;background:rgba(3,6,14,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:18px}
+.modal-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;z-index:50;background:rgba(3,6,14,.6);display:none;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;overflow:hidden;margin:0}
+.modal-bg::before{content:"";position:absolute;inset:0;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:none}
+.modal-bg>.modal{position:relative;z-index:1}
 .modal-bg.open{display:flex}
 .modal{width:min(460px,100%);max-height:calc(100vh - 36px);display:flex;flex-direction:column;overflow:hidden;padding:0}
 .modal-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
@@ -200,7 +202,7 @@ footer{padding:40px 0 60px;color:var(--mute);font-size:13px;text-align:center}
   <footer>Macham. PayPal sandbox by default.</footer>
 </div>
 
-<!-- Chat modal: the buyer's whole flow in one glass panel -->
+<!-- Chat modal: real text box, local rule-based agent, cart built in chat -->
 <div class="modal-bg" id="chat" role="dialog" aria-modal="true" aria-labelledby="chat-title">
   <div class="glass modal">
     <div class="modal-head">
@@ -208,35 +210,24 @@ footer{padding:40px 0 60px;color:var(--mute);font-size:13px;text-align:center}
       <b id="chat-title">Macham agent</b>
       <button class="x" type="button" aria-label="Close" data-close-chat>&times;</button>
     </div>
-    <div class="thread">
-      <div class="bub agent">What do you need from Tee Lab?</div>
-      <div class="bub user">Two black tees, medium, and an olive cap.</div>
-      <div class="bub agent">Here is your cart. Totals come from the store.</div>
-      <div class="cart" aria-label="Cart summary">
-        <div class="row"><span>Tee, black, M x2</span><span>5,000.00 NGN</span></div>
-        <div class="row"><span>Cap, olive x1</span><span>800.00 NGN</span></div>
-        <div class="tot"><span>Total</span><span>5,800.00 NGN</span></div>
-        <div class="meta">Nothing is charged until you approve.</div>
-      </div>
+    <div class="thread" id="thread" aria-live="polite"></div>
+    <div class="cart" id="cart" aria-label="Cart summary" hidden>
+      <div id="cart-lines"></div>
+      <div class="tot"><span>Total</span><span id="cart-total">0.00 USD</span></div>
+      <div class="meta">Nothing is charged until you approve this total.</div>
     </div>
     <div class="approve">
-      <button class="btn primary" id="approve" type="button">Approve 5,800.00 NGN</button>
-      <p class="note" id="prop-note">You approve this exact total.</p>
+      <button class="btn primary" id="approve" type="button" disabled>Approve total</button>
+      <p class="note" id="prop-note">Add something to your cart to approve.</p>
     </div>
-    <div id="settled" hidden>Captured. Your receipt is in the chat.</div>
+    <form class="composer" id="chat-form" autocomplete="off">
+      <input id="chat-input" type="text" placeholder="e.g. wireless headphones under 100" aria-label="Type a request" maxlength="300">
+      <button class="btn primary" type="submit">Send</button>
+    </form>
+    <div id="settled" hidden>Approved. Receipt will appear here once PayPal captures the total.</div>
   </div>
 </div>
 
-<script>
-(function(){
-  var modal=document.getElementById("chat");
-  function open(){modal.classList.add("open")}
-  function close(){modal.classList.remove("open")}
-  document.querySelectorAll("[data-open-chat]").forEach(function(b){b.addEventListener("click",open)});
-  document.querySelector("[data-close-chat]").addEventListener("click",close);
-  modal.addEventListener("click",function(e){if(e.target===modal)close()});
-  document.addEventListener("keydown",function(e){if(e.key==="Escape")close()});
-})();
-</script>
+<script type="module" src="/src/main.ts"></script>
 </body>
 </html>
