@@ -3,230 +3,139 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Macham: shop with an agent, approve one total</title>
-<meta name="description" content="Macham is a cart for AI agents. Ask in plain words, review one cart, approve, and PayPal captures the exact total.">
-<meta property="og:title" content="Macham: ask, review, approve">
-<meta property="og:description" content="An agent builds the cart. You approve one total. PayPal captures that exact amount.">
-<meta name="theme-color" content="#0b1020">
-<style>
-:root{
-  --bg:#0b1020;--ink:#eef2ff;--mute:#a7b0cc;--line:rgba(255,255,255,.14);
-  --glass:rgba(255,255,255,.08);--glass-2:rgba(255,255,255,.14);
-  --accent:#7cf2d4;--accent-2:#7aa7ff;--warn:#ffd28a;
-  --r:20px;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font:16px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
-  background:radial-gradient(900px 600px at 10% -10%,#23325f 0%,transparent 60%),
-             radial-gradient(800px 600px at 110% 10%,#13455a 0%,transparent 55%),
-             linear-gradient(180deg,#0b1020,#070b17 60%,#0b1020);
-  min-height:100vh;overflow-x:hidden}
-body::before,body::after{content:"";position:fixed;z-index:-1;width:520px;height:520px;border-radius:50%;filter:blur(90px);opacity:.45;pointer-events:none}
-body::before{background:#4b6bff;top:-160px;left:-120px}
-body::after{background:#2ee6c0;bottom:-200px;right:-160px}
-a{color:inherit}
-.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
-.glass{background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.04));
-  border:1px solid var(--line);border-radius:var(--r);
-  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
-  box-shadow:0 20px 60px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12)}
-header.top{position:sticky;top:12px;z-index:20;margin:14px auto 0;max-width:1080px;padding:10px 14px;display:flex;align-items:center;gap:14px;
-  border-radius:999px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);background:rgba(12,18,36,.55);border:1px solid var(--line)}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px;text-decoration:none}
-.logo i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:inline-block}
-nav.menu-top{margin-left:auto;display:flex;gap:6px;align-items:center}
-nav.menu-top a{text-decoration:none;color:var(--mute);padding:8px 12px;border-radius:999px;font-size:14px}
-nav.menu-top a:hover{color:var(--ink);background:var(--glass)}
-.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--glass);color:var(--ink);
-  padding:12px 18px;border-radius:999px;font:600 15px/1 system-ui,sans-serif;cursor:pointer;text-decoration:none;
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:transform .15s,background .15s}
-.btn:hover{background:var(--glass-2);transform:translateY(-1px)}
-.btn.primary{background:linear-gradient(135deg,var(--accent),#56d6ff);color:#04201a;border-color:transparent;font-weight:700}
-.btn.primary:hover{filter:brightness(1.05)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.hero{padding:70px 0 40px;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
-.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--mute);padding:6px 12px;border-radius:999px;background:var(--glass);border:1px solid var(--line)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
-h1{font-size:clamp(36px,5.2vw,58px);line-height:1.04;letter-spacing:-1.2px;margin:18px 0 14px;font-weight:800}
-h1 span{background:linear-gradient(120deg,var(--accent),#7aa7ff 60%,#c4a8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{color:var(--mute);font-size:18px;max-width:46ch;margin:0 0 26px}
-.ctas{display:flex;gap:12px;flex-wrap:wrap}
-.preview{padding:18px;position:relative}
-.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
-.chip{font-size:12px;padding:5px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--line);color:var(--mute)}
-.section{padding:56px 0}
-.kick{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);font-weight:700}
-h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.6px;margin:8px 0 10px;line-height:1.1}
-.sub{color:var(--mute);margin:0 0 26px;max-width:60ch}
-.stories{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.story{padding:26px}
-.story h3{margin:4px 0 16px;font-size:20px}
-.steps{list-style:none;padding:0;margin:0;display:grid;gap:12px;counter-reset:s}
-.steps li{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;padding:12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
-.ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(124,242,212,.25),rgba(122,167,255,.25));border:1px solid var(--line)}
-.ico svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.steps b{display:block;font-size:15px}
-.steps small{color:var(--mute);font-size:13px}
-.flow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px;color:var(--mute);font-size:13px}
-.flow span{padding:6px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--line);color:var(--ink)}
-.flow em{font-style:normal;opacity:.5}
-.snippet{position:relative;padding:18px 18px 18px;font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe0ff;overflow:auto;border-radius:var(--r)}
-.copy{position:absolute;top:12px;right:12px;font:600 12px system-ui,sans-serif;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--glass-2);color:var(--ink);cursor:pointer}
-#install-code{white-space:pre;display:block}
-.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.card{padding:22px}
-.card .ico{margin-bottom:12px}
-.card h3{margin:0 0 6px;font-size:17px}
-.card p{margin:0;color:var(--mute);font-size:14px}
-footer{padding:40px 0 60px;color:var(--mute);font-size:13px;text-align:center}
-/* chat modal */
-.modal-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;z-index:50;background:rgba(3,6,14,.6);display:none;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;overflow:hidden;margin:0}
-.modal-bg::before{content:"";position:absolute;inset:0;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:none}
-.modal-bg>.modal{position:relative;z-index:1}
-.modal-bg.open{display:flex}
-.modal{width:min(460px,100%);max-height:calc(100vh - 36px);display:flex;flex-direction:column;overflow:hidden;padding:0}
-.modal-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
-.modal-head b{font-size:15px}
-.modal-head .x{margin-left:auto;border:0;background:transparent;color:var(--mute);font-size:22px;cursor:pointer;line-height:1}
-.thread{padding:16px 18px;display:flex;flex-direction:column;gap:10px;overflow:auto}
-.bub{max-width:82%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.45}
-.bub.agent{align-self:flex-start;background:rgba(255,255,255,.1);border:1px solid var(--line);border-bottom-left-radius:6px}
-.bub.user{align-self:flex-end;background:linear-gradient(135deg,rgba(124,242,212,.9),rgba(86,214,255,.9));color:#04201a;border-bottom-right-radius:6px;font-weight:600}
-.cart{align-self:stretch;padding:14px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
-.cart .row{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px dashed var(--line)}
-.cart .row:last-of-type{border-bottom:0}
-.cart .tot{display:flex;justify-content:space-between;font-weight:800;font-size:18px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
-.cart .meta{color:var(--mute);font-size:12px;margin-top:6px}
-.approve{padding:14px 18px 18px;border-top:1px solid var(--line)}
-.approve .btn{width:100%;justify-content:center;font-size:16px;padding:14px}
-.approve .note{color:var(--mute);font-size:12px;margin:10px 0 0;text-align:center;min-height:1em}
-#settled{margin:0 18px 16px;padding:12px;border-radius:14px;background:rgba(124,242,212,.12);border:1px solid rgba(124,242,212,.35);font-size:13px}
-#settled[hidden]{display:none}
-.js .rise{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
-.js .rise.in{opacity:1;transform:none}
-@media (max-width:860px){.hero{grid-template-columns:1fr;padding-top:40px}.stories,.cols{grid-template-columns:1fr}nav.menu-top a.hide{display:none}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-</style>
+<title>Macham</title>
+<meta name="description" content="Ask in plain words. Approve one total. PayPal captures that exact amount.">
+<meta property="og:title" content="Macham">
+<meta property="og:description" content="Ask. Approve.">
+<meta name="theme-color" content="#05070d">
 </head>
 <body>
-<div class="wrap">
-  <header class="top glass">
-    <a class="logo" href="#top"><i></i>Macham</a>
-    <nav class="menu-top" aria-label="Primary">
-      <a class="hide" href="#buyer">Buyer</a>
-      <a class="hide" href="#merchant">Merchant</a>
-      <a class="hide" href="#integrate">Install</a>
-      <button class="btn primary" type="button" data-open-chat>Try the agent</button>
-    </nav>
-  </header>
+<div class="scene" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div>
 
+<header class="top glass">
+  <a class="brand" href="#top"><span class="mark"></span>Macham</a>
+  <nav>
+    <a href="#extension">Extension</a>
+    <a href="#flow">Flow</a>
+    <a href="#merchants">Stores</a>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO: the live agent is the product -->
   <section class="hero" id="top">
-    <div class="rise">
-      <span class="eyebrow"><span class="dot"></span> PayPal orders v2</span>
-      <h1 id="hero-copy">Ask. Review. <span>Approve one total.</span></h1>
-      <p class="lead">An agent builds your cart from the store. You see one total. PayPal captures exactly that amount, and nothing else.</p>
-      <div class="ctas">
-        <button class="btn primary" type="button" data-open-chat id="cta-copy">Try the chat</button>
-        <a class="btn" href="#integrate">Add to my store</a>
-      </div>
+    <div class="hero-copy">
+      <h1>Ask. <span>Approve.</span></h1>
     </div>
 
-    <div class="glass preview rise" aria-label="Preview of the cart modal">
-      <div class="chip-row"><span class="chip">Sample store</span><span class="chip">2 items</span><span class="chip">PayPal</span></div>
-      <div class="cart" style="margin-top:14px">
-        <div class="row"><span>Tee, black, M</span><span>2,500.00 NGN</span></div>
-        <div class="row"><span>Cap, olive</span><span>800.00 NGN</span></div>
-        <div class="tot"><span>Total</span><span>3,300.00 NGN</span></div>
-        <div class="meta">Amount set by the store. Captured once you approve.</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section rise" id="buyer">
-    <div class="kick">Buyer</div>
-    <h2>Four taps from a question to paid.</h2>
-    <p class="sub">The shopper never fills a cart by hand.</p>
-    <div class="stories">
-      <div class="glass story">
-        <h3>Ask the agent</h3>
-        <ol class="steps">
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><div><b>Open the chat</b><small>Browse the store, tap the button.</small></div></li>
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/></svg></span><div><b>Describe what you want</b><small>In plain words, like a friend.</small></div></li>
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 3H3"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></span><div><b>Get a cart</b><small>Real items, real prices from the store.</small></div></li>
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg></span><div><b>Approve one total</b><small>Done. Receipt in the chat.</small></div></li>
-        </ol>
-        <div class="flow"><span>Browse</span><em>&rarr;</em><span>Chat</span><em>&rarr;</em><span>Cart</span><em>&rarr;</em><span>Approve</span></div>
-      </div>
-
-      <div class="glass story" id="merchant">
-        <h3>Sell through the agent</h3>
-        <ol class="steps">
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M4 21h16"/></svg></span><div><b>Upload your catalog</b><small>One CSV: title, price, currency.</small></div></li>
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/><circle cx="12" cy="12" r="9"/></svg></span><div><b>We validate it</b><small>Bad rows are shown, not guessed.</small></div></li>
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M10 14l4-4M8 16l-2 2a3 3 0 01-4-4l2-2M16 8l2-2a3 3 0 014 4l-2 2"/></svg></span><div><b>Get payable links</b><small>Each item is checked on the server.</small></div></li>
-          <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V8M10 20V4M16 20v-8M22 20H2"/></svg></span><div><b>See your orders</b><small>Every capture, per store.</small></div></li>
-        </ol>
-        <div class="flow"><span>CSV</span><em>&rarr;</em><span>Check</span><em>&rarr;</em><span>Links</span><em>&rarr;</em><span>Orders</span></div>
+    <div class="stage">
+      <div class="window glass" id="demo" data-ui>
+        <div class="win-head">
+          <span class="lights"><i></i><i></i><i></i></span>
+          <span class="win-title">Macham</span>
+          <span class="live"><i></i>live</span>
+        </div>
+        <div class="thread" id="demo-thread"></div>
+        <div class="cart-card glass-2" id="demo-cart" hidden>
+          <div id="demo-lines"></div>
+          <div class="tot"><span>Total</span><b id="demo-total">0.00 USD</b></div>
+        </div>
+        <div class="approve-row">
+          <button class="pay" id="demo-approve" type="button" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h7a4 4 0 0 1 0 8H9.5L8.6 20H5.2z"/></svg>
+            <span id="demo-approve-text">Approve total</span>
+          </button>
+        </div>
+        <div class="fake-input"><span id="demo-typed"></span><i class="caret"></i></div>
+        <div class="cursor" id="cursor" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.4-3.6-7L4 17z"/></svg>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="section rise" id="guardrails">
-    <div class="kick">Why it is safe</div>
-    <h2>The store sets the price. Not the browser.</h2>
-    <div class="cols" style="margin-top:22px">
-      <div class="glass card"><span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span><h3>Server-priced</h3><p>Every amount comes from the store's own catalog. A tampered price is refused.</p></div>
-      <div class="glass card"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></span><h3>Capture matches</h3><p>PayPal captures exactly the approved total, then the order is checked again.</p></div>
-      <div class="glass card"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><h3>Per store, kept</h3><p>Orders are scoped to each store key and saved, so a retry never charges twice.</p></div>
+  <!-- EXTENSION: the mascot on any store -->
+  <section class="section" id="extension">
+    <p class="kicker">Extension</p>
+    <h2>Any store.</h2>
+    <div class="ext-stage">
+      <div class="browser glass" id="ext-browser">
+        <div class="bar">
+          <span class="lights"><i></i><i></i><i></i></span>
+          <span class="url">yourstore.com</span>
+          <span class="tool"><img id="ext-mascot" src="/icon-128.png" alt="" width="18" height="18"></span>
+        </div>
+        <div class="page">
+          <div class="p-nav"><i></i><i></i><i></i></div>
+          <div class="p-hero"></div>
+          <div class="p-grid"><div></div><div></div><div></div></div>
+        </div>
+        <div class="popup glass-2" id="ext-popup">
+          <div class="pop-head"><img src="/icon-128.png" alt="" width="20" height="20"><b>Macham</b></div>
+          <div class="pop-field" id="ext-field"><span id="ext-typed"></span><i class="caret"></i></div>
+          <div class="pop-go">Ask</div>
+          <div class="pop-reply" id="ext-reply"></div>
+        </div>
+        <div class="cursor" id="ext-cursor" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.4-3.6-7L4 17z"/></svg>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="section rise" id="integrate">
-    <div class="kick">Install</div>
-    <h2>One script tag. Your store keeps its checkout.</h2>
-    <p class="sub">Paste this before the closing body tag.</p>
-    <div class="glass snippet">
-      <button class="copy" type="button" id="code-copy" data-copy>Copy</button>
-      <code id="install-code">&lt;script src="https://YOUR-MACHAM-HOST/macham.js" data-key="mch_live_..." defer&gt;&lt;/script&gt;
-&lt;script&gt;
-  Macham.init({
-    apiKey: "mch_live_...",
-    tenantId: "my-store",
-    assistUrl: "https://YOUR-MACHAM-HOST",
-  })
-&lt;/script&gt;</code>
+  <!-- FLOW: tech as roles, not paragraphs -->
+  <section class="section" id="flow">
+    <p class="kicker">Flow</p>
+    <div class="flow">
+      <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/></svg></span><b>Agent</b><small>Groq, Nemotron</small></div>
+      <div class="link"></div>
+      <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span><b>Reads store</b><small>Shopify, JSON-LD</small></div>
+      <div class="link"></div>
+      <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 4v16M6 12h8l4-4M14 12l4 4"/></svg></span><b>Fallback</b><small>Kernel, Channel3</small></div>
+      <div class="link"></div>
+      <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9.5 9.5h3.2a2 2 0 0 1 0 4H10.8L10.2 16"/></svg></span><b>Pay</b><small>PayPal</small></div>
+      <div class="link"></div>
+      <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><path d="M9 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M15 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><b>Receipt</b><small>Rialo</small></div>
     </div>
   </section>
 
-  <footer>Macham. PayPal sandbox by default.</footer>
-</div>
+  <!-- TODAY -->
+  <section class="section" id="merchants">
+    <p class="kicker">Today</p>
+    <div class="today">
+      <div class="glass card"><span class="n">01</span><p>Install the extension. Shop any store, even ones that never integrated.</p></div>
+      <div class="glass card"><span class="n">02</span><p>Stores add one script tag or the SDK. Their checkout stays theirs.</p></div>
+      <div class="glass card"><span class="n">03</span><p>Chat to build a cart. Approve one total. PayPal captures that amount.</p></div>
+    </div>
+  </section>
 
-<!-- Chat modal: real text box, local rule-based agent, cart built in chat -->
-<div class="modal-bg" id="chat" role="dialog" aria-modal="true" aria-labelledby="chat-title">
-  <div class="glass modal">
-    <div class="modal-head">
-      <span class="logo"><i></i></span>
-      <b id="chat-title">Macham agent</b>
-      <button class="x" type="button" aria-label="Close" data-close-chat>&times;</button>
+  <!-- TRY: the same agent, live -->
+  <section class="section" id="try">
+    <p class="kicker">Try it</p>
+    <div class="glass try">
+      <div class="thread" id="try-thread"></div>
+      <div class="cart-card glass-2" id="try-cart" hidden>
+        <div id="try-lines"></div>
+        <div class="tot"><span>Total</span><b id="try-total">0.00 USD</b></div>
+      </div>
+      <button class="pay" id="try-approve" type="button" disabled>Approve total</button>
+      <form id="try-form" class="composer" autocomplete="off">
+        <input id="try-input" type="text" placeholder="wireless earbuds under 60" aria-label="Type a request" maxlength="300">
+        <button class="btn" type="submit">Send</button>
+      </form>
     </div>
-    <div class="thread" id="thread" aria-live="polite"></div>
-    <div class="cart" id="cart" aria-label="Cart summary" hidden>
-      <div id="cart-lines"></div>
-      <div class="tot"><span>Total</span><span id="cart-total">0.00 USD</span></div>
-      <div class="meta">Nothing is charged until you approve this total.</div>
+  </section>
+
+  <section class="section" id="install">
+    <p class="kicker">Store</p>
+    <div class="glass snippet-card">
+      <pre id="install-code">&lt;script src="https://YOUR-MACHAM-HOST/macham.js" data-key="mch_live_..." defer&gt;&lt;/script&gt;</pre>
+      <button class="btn small" type="button" data-copy>Copy</button>
     </div>
-    <div class="approve">
-      <button class="btn primary" id="approve" type="button" disabled>Approve total</button>
-      <p class="note" id="prop-note">Add something to your cart to approve.</p>
-    </div>
-    <form class="composer" id="chat-form" autocomplete="off">
-      <input id="chat-input" type="text" placeholder="e.g. wireless headphones under 100" aria-label="Type a request" maxlength="300">
-      <button class="btn primary" type="submit">Send</button>
-    </form>
-    <div id="settled" hidden>Approved. Receipt will appear here once PayPal captures the total.</div>
-  </div>
-</div>
+  </section>
+</main>
+
+<footer>macham.vercel.app</footer>
 
 <script type="module" src="/src/main.ts"></script>
 </body>
