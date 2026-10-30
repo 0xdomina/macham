@@ -185,7 +185,7 @@ async function runDemo(): Promise<void> {
     await press(demoApprove);
     demoApprove.classList.add("approved");
     demoApproveText.textContent = "Approved " + money(total.v);
-    bubble(demoThread, "agent", "Approved. PayPal captures " + money(total.v) + ".");
+    bubble(demoThread, "agent", "Approved. In the live product, PayPal captures " + money(total.v) + ". This page is a simulated demo; no payment is processed.");
     await wait(3600);
     cursor.classList.remove("on");
     await wait(600);
@@ -329,5 +329,5 @@ tryApprove.addEventListener("click", () => {
   tryApprove.disabled = true;
   tryApprove.classList.add("approved");
   tryApprove.textContent = "Approved " + money(total);
-  bubble(tryThread, "agent", "Approved. PayPal captures " + money(total) + " once the store's order is live.");
+  bubble(tryThread, "agent", "Approved. Simulated demo: no payment is processed. In the live product, PayPal captures the approved amount.");
 });
