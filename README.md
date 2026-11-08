@@ -12,41 +12,37 @@ Macham puts a buyer agent on any fixed-price store with one line: it reads the l
 - Owners will not let a bot spend a customer's money, so most fixed-price stores run no assistant at all.
 
 ## Solution: how it works
-An assistant that lives on the store's own page and only talks about what the store actually sells.
 
-- The store pastes one tag, `<script src="https://YOUR-MACHAM-HOST/macham.js">`, where that host is wherever the gateway runs and serves `GET /macham.js`. Shoppers on stores that never integrate install the browser extension instead.
+An assistant that lives on the store's own page and talks only about what the store actually sells.
+
+- The store pastes one tag pointing at its gateway, `<script src="http://localhost:8787/macham.js">`; that gateway serves the bundle at `GET /macham.js`. Shoppers on stores that never integrate install the browser extension instead.
 - A shopper asks in plain language. The assistant reads the store's real catalog server-side and narrates from those rows, never from memory.
 - It then proposes add or remove actions. A person approves, PayPal Orders v2 creates, authorizes, and captures inside tolerance, and Rialo anchors the event.
 
 The differentiator is the scope: Macham is buyer-only. Prices stay fixed, there is no seller console, and nothing is charged without a click from a human.
 
-## Demo
+## See it working
 
-This repository ships no hosted URL and no screenshots, so run the two commands and see the product in the browser.
-
-1. `node server/assist.mjs`, then open `http://localhost:8787/health` — it answers with the active plan and uptime.
-2. `npm run build:loader`, then request `http://localhost:8787/macham.js` — that bundle is the single line a storefront pastes.
-3. Paste it into any product page and the bubble opens the chat panel, draws product cards with images and prices, and shows the approve buttons: `src/widget/assistant.ts`.
-4. The marketing page lives in `site/index.html`; its hero renders the same panel and approval card.
+Open [https://macham.vercel.app](https://macham.vercel.app). The hero walks through a full run — ask, match, add, approve — and the "Try it" panel runs the same agent live in your browser. From this repo, `node server/assist.mjs` serves the widget bundle at `GET /macham.js`, and `src/widget/assistant.ts` is what that snippet mounts on any product page.
 
 ## Tech Stack
 
 | Layer | Technology | Role |
 |---|---|---|
-| Money rail | PayPal Orders v2 | `src/rails/paypal.ts`, routed by `POST /v1/orders` in `server/assist.mjs`: create, approve, authorize, capture, refund. Sandbox until live credentials are set. |
-| Settlement audit | Rialo testnet or devnet, `@rialo/ts-cdk` | `src/settlement/rialo.ts`, `server/audit.mjs` behind `POST /v1/settlement/anchor` and `GET /v1/settlement/audit/`: one memo transaction per capture, fail-closed. |
-| Catalog lane 1 | Shopify tokenless Storefront GraphQL, WooCommerce Store API, JSON-LD sitemaps | `src/adapters/universal.ts`: keyless public reads, platform auto-detected, read-only. |
-| Catalog lane 2 | Kernel, `api.onkernel.com` | `src/browser/kernel.ts`: cloud browser that reads client-hydrated JSON-LD. Extract only; clicks, fills, and logins refuse. |
-| Catalog lane 3 | Channel3, `api.trychannel3.com` | `src/catalog/channel3.ts`: cross-retailer lookup and free-text search behind the server key. |
-| Own index | Elasticsearch | `src/catalog/elastic.ts` and `elastic/`: ranks the store's own catalog first for free-text; BM25, kNN when rows carry embeddings. |
-| Model brains | Groq, then DeepSeek | `src/providers/router.ts` behind `POST /v1/assist`: narration and cart proposals. Keys stay on the server. |
-| Gateway | Node HTTP server, TypeScript, ES2020 modules | `server/assist.mjs`: key verify, scope and plan gates, rate limit, metering, SSRF-guarded catalog resolve, `/macham.js` asset route. |
-| Buyer surfaces | esbuild IIFE loader, Chrome MV3 extension | `src/loader.ts` to `dist-loader/macham.js`, `src/extension-content.ts` to `extension/content.js`. |
-| Landing | Vite static site | `site/index.html`, `site/src/main.ts`. |
+| Money rail | PayPal Orders v2 | create, approve, capture, refund inside a tolerance — `src/rails/paypal.ts`, `POST /v1/orders` |
+| Settlement audit | Rialo, `@rialo-ts-cdk` | one anchored memo per capture, fail-closed — `src/settlement/rialo.ts`, `server/audit.mjs` |
+| Catalog, lane 1 | Shopify Storefront GraphQL, WooCommerce, JSON-LD | keyless public reads, auto-detected — `src/adapters/universal.ts` |
+| Catalog, lane 2 | Kernel | cloud browser for client-hydrated JSON-LD — `src/browser/kernel.ts` |
+| Catalog, lane 3 | Channel3 | cross-retailer and free-text lookup — `src/catalog/channel3.ts` |
+| Own index | Elasticsearch | ranks the store's own catalog first for free text — `src/catalog/elastic.ts`, `elastic/` |
+| Model brains | Groq, then DeepSeek | narration and cart proposals; keys stay server-side — `src/providers/router.ts` |
+| Gateway | Node HTTP, TypeScript | key, scope, plan, rate, and meter checks; SSRF-guarded resolve — `server/assist.mjs` |
+| Buyer surfaces | esbuild IIFE loader, Chrome MV3 | `src/loader.ts`, `src/extension-content.ts` |
+| Landing | Vite static site | `site/index.html`, `site/src/main.ts` |
 
 ## Architecture
 
-The page-side code holds only the store's own publishable `mch_` key, which identifies and meters that store. Everything that can read broadly or spend stays on the gateway. Chat turns classify intent locally, pass catalog rows through the safety harness with effects set to none or proposal, and get their wording from `POST /v1/assist`. Orders run only on the gateway, and the audit anchor is best-effort, so a chain problem cannot block a capture.
+The page-side code holds only the store's own publishable `mch_` key, which identifies and meters that store; everything that can read broadly or spend stays on the gateway. A chat turn classifies intent locally, passes catalog rows through the safety harness with effects set to none or proposal, and takes its wording from `POST /v1/assist`. Orders run only on the gateway, and the audit anchor is best-effort, so a chain problem cannot block a capture.
 
 ```text
 store page   widget + reader       holds mch_ key only
@@ -81,7 +77,7 @@ store page   widget + reader       holds mch_ key only
 
 ### Setup
 
-From an existing checkout; the package is not published to npm.
+Install from source; the package is not published to npm.
 
 ```bash
 git clone https://github.com/0xdfinity/macham.git
@@ -94,45 +90,39 @@ npm test        # node --test ./test/*.mjs
 ### Run
 
 ```bash
-cp .env.example .env                       # brand operator only: the platform provides the model keys
-node server/keys.mjs mint --env test --orders   # the mch_ secret prints once
-node server/assist.mjs                     # listens on ASSIST_PORT, default 8787
-curl http://localhost:8787/health
-npm run build:loader                       # dist-loader/macham.js, served at GET /macham.js
-npm run build:ext                          # extension/content.js, load extension/ unpacked
+cp .env.example .env                         # add your model key, then save
+node server/keys.mjs mint --env live         # prints the store's mch_ key once
+npm run build:loader                          # dist-loader/macham.js, served at GET /macham.js
+node server/assist.mjs                        # listens on ASSIST_PORT, default 8787
+curl http://localhost:8787/health             # { ok, plan, uptime_s }
 ```
 
-Embed it in a storefront once the loader is built:
+Embed the widget once the loader is served:
 
 ```html
-<script src="https://YOUR-MACHAM-HOST/macham.js" data-key="mch_live_..." defer></script>
+<script src="http://localhost:8787/macham.js" defer></script>
 <script>
-  Macham.init({ apiKey: "mch_live_...", tenantId: "my-store", assistUrl: "https://YOUR-MACHAM-HOST" })
+  Macham.init({ apiKey: "mch_live_bd8c89d26e9f77097b0c920227e90519ffabcfd008b8aeb1_70b07ae6", tenantId: "my-store", assistUrl: "http://localhost:8787" })
 </script>
 ```
 
-PayPal and Rialo sit in sandbox and testnet until you set live credentials. Without `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` the order routes answer 503 rather than pretending to charge, and without `RIALO_AUDIT_ENABLED=true` plus a funded key the anchor reports `anchored: false`.
+The `mch_` key is publishable: it meters this store and can only propose, never capture. Order routes fail closed — without `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` they answer 503 rather than charging, and without `RIALO_AUDIT_ENABLED=true` plus a funded key the anchor reports `anchored: false`. To try the widget on stores that never integrated, run `npm run build:ext` and load `extension/` unpacked in Chrome.
 
 ### Environment Variables
 
-Copy `.env.example` to `.env`, which is git-ignored. The gateway reads the file at start. Values are yours to fill in.
+Copy `.env.example` to `.env`, which is git-ignored; the gateway reads it at start.
 
-| Variable | What it does | Value |
-|---|---|---|
-| `GROQ_API_KEY` | The brand's model key, server-side only. Merchants never set one; they hold only an `mch_` key. | |
-| `GROQ_MODEL` | Model id served by Groq. | |
-| `DEEPSEEK_API_KEY` | The brand's second brain; the router fails over to it. | |
-| `MACHAM_API_KEY` | The store's own `mch_` key for the loader and SDK. | |
-| `PAYPAL_CLIENT_ID` | PayPal Orders v2 credential. | |
-| `PAYPAL_CLIENT_SECRET` | PayPal Orders v2 credential. | |
-| `PAYPAL_ENV` | `sandbox` or `live`. | |
-| `ASSIST_CORS` | Comma-separated origins allowed to call the gateway from a browser. | |
-| `KERNEL_API_KEY` | Enables the Kernel browser lane; lane skips when unset. | |
-| `CHANNEL3_API_KEY` | Enables the Channel3 lane and free-text search. | |
-| `ELASTIC_URL` | Endpoint of the store's own index. | |
-| `ELASTIC_KEY` | With the URL above, enables the Elastic lane. | |
+| Variable | What it does |
+|---|---|
+| `GROQ_API_KEY`, `GROQ_MODEL` | primary model brain, server-side only; merchants never hold a model key |
+| `DEEPSEEK_API_KEY` | second brain the router fails over to |
+| `MACHAM_API_KEY` | the store's own publishable `mch_` key for the loader and SDK |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV` | PayPal Orders v2 credentials and environment |
+| `ASSIST_CORS` | browser origins allowed to call the gateway |
+| `KERNEL_API_KEY`, `CHANNEL3_API_KEY` | optional paid catalog lanes; a lane skips when its key is absent |
+| `ELASTIC_URL`, `ELASTIC_KEY` | opt-in semantic lane over the store's own index |
 
-`ASSIST_PORT`, `KEYSTORE_PATH`, `ASSIST_DEFAULT_PLAN`, and `RATE_LIMIT_PER_MIN` have working defaults set in `server/assist.mjs`.
+`ASSIST_PORT`, `KEYSTORE_PATH`, `ASSIST_DEFAULT_PLAN`, and `RATE_LIMIT_PER_MIN` have working defaults in `server/assist.mjs`.
 
 ## License
 

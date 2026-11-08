@@ -1,6 +1,6 @@
 export * from "./types.js"
 export * from "./adapters/types.js"
-export * from "./adapters/mock.js"
+export * from "./adapters/in-memory.js"
 export * from "./adapters/universal.js"
 export * from "./providers/types.js"
 export * from "./providers/cloud.js"

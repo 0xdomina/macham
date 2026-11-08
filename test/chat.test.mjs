@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import {
   Harness,
   MockProvider,
-  MockStoreAdapter,
+  InMemoryStoreAdapter,
   cartProposalContract,
   chatTurn,
   searchContract,
@@ -26,7 +26,7 @@ function harness() {
 }
 
 test("chat routes cart, search, and fallback", async () => {
-  const store = new MockStoreAdapter()
+  const store = new InMemoryStoreAdapter()
   const h = harness()
   const added = await chatTurn(h, store, [], "add a cap to my bag")
   assert.equal(added.reply.intent, "cart_add")

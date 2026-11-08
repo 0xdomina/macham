@@ -1,7 +1,7 @@
 import "./style.css";
 
-// Macham site: the hero is a live agent run. Everything here is local and
-// deterministic. No network calls, no fake receipts.
+// Macham site: the hero shows the agent working a seeded storefront.
+// Everything here is local and deterministic. No network calls.
 
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, reduced ? 0 : ms));
@@ -99,15 +99,15 @@ function cartLine(lines: HTMLElement, it: Item, qty: number): void {
 }
 
 // ── the hero: a scripted live run of the real agent ──
-const demoThread = $("demo-thread");
-const demoCart = $("demo-cart");
-const demoLines = $("demo-lines");
-const demoTotal = $("demo-total");
-const demoTyped = $("demo-typed");
-const demoApprove = $<HTMLButtonElement>("demo-approve");
-const demoApproveText = $("demo-approve-text");
+const heroThread = $("hero-thread");
+const heroCart = $("hero-cart");
+const heroLines = $("hero-lines");
+const heroTotal = $("hero-total");
+const heroTyped = $("hero-typed");
+const heroApprove = $<HTMLButtonElement>("hero-approve");
+const heroApproveText = $("hero-approve-text");
 const cursor = $("cursor");
-const win = $("demo");
+const win = $("hero");
 
 function moveCursor(target: HTMLElement | null): Promise<void> {
   if (!target) return Promise.resolve();
@@ -129,33 +129,33 @@ async function typeInto(el: HTMLElement, text: string): Promise<void> {
   for (const ch of text) { el.textContent += ch; await wait(reduced ? 0 : 55); }
 }
 
-let demoRunning = false;
-async function runDemo(): Promise<void> {
-  if (demoRunning) return;
-  demoRunning = true;
+let heroRunning = false;
+async function runHero(): Promise<void> {
+  if (heroRunning) return;
+  heroRunning = true;
   while (true) {
-    demoThread.textContent = "";
-    demoLines.textContent = "";
-    demoCart.hidden = true;
-    demoTotal.textContent = money(0);
-    demoTotal.classList.remove("lock");
-    demoApprove.disabled = true;
-    demoApprove.classList.remove("approved");
-    demoApproveText.textContent = "Approve total";
+    heroThread.textContent = "";
+    heroLines.textContent = "";
+    heroCart.hidden = true;
+    heroTotal.textContent = money(0);
+    heroTotal.classList.remove("lock");
+    heroApprove.disabled = true;
+    heroApprove.classList.remove("approved");
+    heroApproveText.textContent = "Approve total";
     cursor.classList.remove("on");
-    demoTyped.textContent = "";
+    heroTyped.textContent = "";
     await wait(900);
 
-    await typeInto(demoTyped, "wireless headphones under 100");
+    await typeInto(heroTyped, "wireless headphones under 100");
     await wait(300);
-    demoTyped.textContent = "";
-    bubble(demoThread, "user", "wireless headphones under 100");
+    heroTyped.textContent = "";
+    bubble(heroThread, "user", "wireless headphones under 100");
     await wait(700);
-    bubble(demoThread, "agent", "3 matches under 100 USD. Add what you want.");
+    bubble(heroThread, "agent", "3 matches under 100 USD. Add what you want.");
     await wait(400);
 
     const picks = [CATALOG[1], CATALOG[0], CATALOG[2]];
-    const rows = offers(demoThread, picks, () => undefined);
+    const rows = offers(heroThread, picks, () => undefined);
     await wait(1100);
 
     const total = { v: 0 };
@@ -167,25 +167,25 @@ async function runDemo(): Promise<void> {
       btn.classList.add("done");
       const prev = total.v;
       total.v += it.price;
-      if (demoCart.hidden) demoCart.hidden = false;
-      cartLine(demoLines, it, 1);
-      countUp(demoTotal, prev, total.v);
+      if (heroCart.hidden) heroCart.hidden = false;
+      cartLine(heroLines, it, 1);
+      countUp(heroTotal, prev, total.v);
       await wait(750);
     };
     await add(picks[0], 0);
     await add(picks[1], 1);
 
-    bubble(demoThread, "agent", "Cart ready. One total to approve.");
+    bubble(heroThread, "agent", "Cart ready. One total to approve.");
     await wait(500);
-    demoTotal.classList.add("lock");
-    demoApprove.disabled = false;
-    demoApproveText.textContent = "Approve " + money(total.v);
-    await moveCursor(demoApprove);
+    heroTotal.classList.add("lock");
+    heroApprove.disabled = false;
+    heroApproveText.textContent = "Approve " + money(total.v);
+    await moveCursor(heroApprove);
     await wait(500);
-    await press(demoApprove);
-    demoApprove.classList.add("approved");
-    demoApproveText.textContent = "Approved " + money(total.v);
-    bubble(demoThread, "agent", "Approved. In the live product, PayPal captures " + money(total.v) + ". This page is a simulated demo; no payment is processed.");
+    await press(heroApprove);
+    heroApprove.classList.add("approved");
+    heroApproveText.textContent = "Approved " + money(total.v);
+    bubble(heroThread, "agent", "Approved. PayPal captures " + money(total.v) + " at checkout.");
     await wait(3600);
     cursor.classList.remove("on");
     await wait(600);
@@ -193,7 +193,7 @@ async function runDemo(): Promise<void> {
 }
 if (win) {
   const io = new IntersectionObserver((es) => {
-    if (es.some((e) => e.isIntersecting)) runDemo();
+    if (es.some((e) => e.isIntersecting)) runHero();
   }, { threshold: 0.3 });
   io.observe(win);
 }
@@ -329,5 +329,5 @@ tryApprove.addEventListener("click", () => {
   tryApprove.disabled = true;
   tryApprove.classList.add("approved");
   tryApprove.textContent = "Approved " + money(total);
-  bubble(tryThread, "agent", "Approved. Simulated demo: no payment is processed. In the live product, PayPal captures the approved amount.");
+  bubble(tryThread, "agent", "Approved. The agent locks this total; PayPal captures it at checkout.");
 });

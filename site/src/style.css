@@ -96,7 +96,7 @@ h1 span{color:var(--lime)}
 .pay.approved{background:var(--lime);color:#0b1405;box-shadow:0 14px 34px -10px rgba(198,255,90,.5)}
 .approve-row{margin-top:2px}
 
-.fake-input{display:flex;align-items:center;min-height:46px;padding:0 16px;border-radius:999px;border:1px solid var(--line);
+.typed-input{display:flex;align-items:center;min-height:46px;padding:0 16px;border-radius:999px;border:1px solid var(--line);
   background:rgba(0,0,0,.25);color:var(--ink);font-size:15px}
 .caret{display:inline-block;width:2px;height:18px;background:var(--lime);margin-left:2px;animation:blink 1s steps(1) infinite;vertical-align:middle}
 @keyframes blink{50%{opacity:0}}

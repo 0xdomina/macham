@@ -46,10 +46,10 @@ const PORT = Number(process.env.ASSIST_PORT ?? "8787")
 const CORS = (process.env.ASSIST_CORS ?? "").split(",").map((s) => s.trim()).filter(Boolean)
 const PLAN = PLANS[process.env.ASSIST_DEFAULT_PLAN] ?? PLANS.free
 const STORE_PATH = process.env.KEYSTORE_PATH ?? "./data/keystore.json"
-// The browser SDK the store owner pastes as a one-line snippet
-// (<script src="https://YOUR-MACHAM-HOST/macham.js">). Served same-origin so the
-// widget's /v1 calls need no CORS. Store owners connect and preview on the
-// website; this endpoint only ships the bundle. No PWA launcher here.
+// The browser SDK a store owner pastes as a one-line snippet, served from
+// wherever this gateway runs (GET /macham.js). Serving it same-origin means
+// the widget's /v1 calls need no CORS. Store owners connect and preview on
+// the website; this route only ships the bundle. No PWA launcher here.
 const STATIC = {
   "/macham.js": { file: "dist-loader/macham.js", type: "application/javascript; charset=utf-8", cache: "public, max-age=300" },
 }

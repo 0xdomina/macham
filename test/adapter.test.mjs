@@ -1,17 +1,17 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { MockStoreAdapter } from "../dist/index.js"
+import { InMemoryStoreAdapter } from "../dist/index.js"
 
-test("mock adapter lists, searches, and reads one product", async () => {
-  const store = new MockStoreAdapter()
-  assert.equal(store.storeId, "mock-demo-store")
+test("in-memory adapter lists, searches, and reads one product", async () => {
+  const store = new InMemoryStoreAdapter()
+  assert.equal(store.storeId, "in-memory-store")
   const all = await store.listProducts()
   assert.equal(all.length, 2)
   const found = await store.listProducts({ query: "cap" })
   assert.equal(found.length, 1)
-  assert.equal(found[0].handle, "demo-cap")
-  const one = await store.getProduct("demo-tee")
-  assert.equal(one?.title, "Demo Tee")
+  assert.equal(found[0].handle, "cap")
+  const one = await store.getProduct("tee")
+  assert.equal(one?.title, "Classic Tee")
   assert.equal(await store.getProduct("missing"), null)
   const cats = await store.listCategories()
   assert.equal(cats.length, 1)

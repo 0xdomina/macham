@@ -29,24 +29,24 @@
     </div>
 
     <div class="stage">
-      <div class="window glass" id="demo" data-ui>
+      <div class="window glass" id="hero" data-ui>
         <div class="win-head">
           <span class="lights"><i></i><i></i><i></i></span>
           <span class="win-title">Macham</span>
           <span class="live"><i></i>live</span>
         </div>
-        <div class="thread" id="demo-thread"></div>
-        <div class="cart-card glass-2" id="demo-cart" hidden>
-          <div id="demo-lines"></div>
-          <div class="tot"><span>Total</span><b id="demo-total">0.00 USD</b></div>
+        <div class="thread" id="hero-thread"></div>
+        <div class="cart-card glass-2" id="hero-cart" hidden>
+          <div id="hero-lines"></div>
+          <div class="tot"><span>Total</span><b id="hero-total">0.00 USD</b></div>
         </div>
         <div class="approve-row">
-          <button class="pay" id="demo-approve" type="button" disabled>
+          <button class="pay" id="hero-approve" type="button" disabled>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h7a4 4 0 0 1 0 8H9.5L8.6 20H5.2z"/></svg>
-            <span id="demo-approve-text">Approve total</span>
+            <span id="hero-approve-text">Approve total</span>
           </button>
         </div>
-        <div class="fake-input"><span id="demo-typed"></span><i class="caret"></i></div>
+        <div class="typed-input"><span id="hero-typed"></span><i class="caret"></i></div>
         <div class="cursor" id="cursor" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.4-3.6-7L4 17z"/></svg>
         </div>
@@ -87,7 +87,7 @@
   <section class="section" id="flow">
     <p class="kicker">Flow</p>
     <div class="flow">
-      <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/></svg></span><b>Agent</b><small>Groq, Nemotron</small></div>
+      <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/></svg></span><b>Agent</b><small>Groq, DeepSeek</small></div>
       <div class="link"></div>
       <div class="node glass"><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span><b>Reads store</b><small>Shopify, JSON-LD</small></div>
       <div class="link"></div>
@@ -129,7 +129,10 @@
   <section class="section" id="install">
     <p class="kicker">Store</p>
     <div class="glass snippet-card">
-      <pre id="install-code">&lt;script src="https://YOUR-MACHAM-HOST/macham.js" data-key="mch_live_..." defer&gt;&lt;/script&gt;</pre>
+      <pre id="install-code">&lt;script src="https://macham.vercel.app/macham.js" defer&gt;&lt;/script&gt;
+&lt;script&gt;
+  Macham.init({ apiKey: "mch_live_bd8c89d26e9f77097b0c920227e90519ffabcfd008b8aeb1_70b07ae6", tenantId: "my-store" })
+&lt;/script&gt;</pre>
       <button class="btn small" type="button" data-copy>Copy</button>
     </div>
   </section>

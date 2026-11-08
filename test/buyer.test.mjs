@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import {
   Harness,
   MockProvider,
-  MockStoreAdapter,
+  InMemoryStoreAdapter,
   classifyBuyerIntent,
   extractKeywords,
   narrateCompare,
@@ -25,10 +25,10 @@ test("intent routes without a model", () => {
 })
 
 test("search grounds in the adapter", async () => {
-  const store = new MockStoreAdapter()
+  const store = new InMemoryStoreAdapter()
   const hits = await searchProducts(store, "black cap thing")
   assert.equal(hits.length, 1)
-  assert.equal(hits[0].product.handle, "demo-cap")
+  assert.equal(hits[0].product.handle, "cap")
   assert.deepEqual(await searchProducts(store, "..."), [])
 })
 
@@ -65,7 +65,7 @@ test("narration presents real matches only", async () => {
     brain: new MockProvider("b", { "Shopper asked:": '{"summary":"Two good options below."}' }),
     capabilities: [{ key: "buyer_search", effects: "none", contract: searchContract }],
   })
-  const store = new MockStoreAdapter()
+  const store = new InMemoryStoreAdapter()
   const hits = await searchProducts(store, "tee")
   const out = await narrateSearch(h, "tee", hits)
   assert.match(out.summary, /Two good options/)
@@ -87,7 +87,7 @@ test("cart proposals never mutate, unknown refuses", async () => {
     brain: new MockProvider("b", {}),
     capabilities: [{ key: "buyer_cart_proposal", effects: "none", contract: cartProposalContract }],
   })
-  const store = new MockStoreAdapter()
+  const store = new InMemoryStoreAdapter()
   const add = await proposeCart(h, store, "add 2 caps to my bag")
   assert.equal(add.action, "add")
   assert.equal(add.qty, 2)

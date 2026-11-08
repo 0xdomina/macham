@@ -3,9 +3,9 @@
   "info": {
     "title": "Macham assist gateway",
     "version": "0.1.0",
-    "description": "Merchant integration surface. One key (mch_) meters sessions and model calls. Model keys never leave this server. Import into APIMatic or Postman to generate SDKs and docs. Terms and pricing ship in launch comms, never in this contract."
+    "description": "Merchant integration surface. One key (mch_) meters sessions and model calls. Model keys never leave this server. Import into APIMatic or Postman to generate SDKs and docs."
   },
-  "servers": [{ "url": "https://api.macham.io", "description": "Production" }, { "url": "http://localhost:8787", "description": "Reference server (server/assist.mjs)" }],
+  "servers": [{ "url": "http://localhost:8787", "description": "Reference gateway (server/assist.mjs)" }, { "url": "https://api.macham.io", "description": "Managed gateway for merchants who do not self-host" }],
   "security": [{ "machamKey": [] }],
   "components": {
     "securitySchemes": {

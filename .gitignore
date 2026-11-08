@@ -24,7 +24,6 @@ CLAUDE.md
 # Internal submission notes stay local
 **/SUBMISSION.md
 
-# Film rig: build output, rendered frames, scratch gateway state — all regenerable
-demo/build/
-demo/out/
-demo/renders/
+# Internal docs and the film rig stay local — not part of the public product repo.
+docs/
+demo/
