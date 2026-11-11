@@ -42,7 +42,8 @@ const { PayPalRail, withinCaptureTolerance } = await import(DIST + "rails/paypal
 const { OrderLedger, OrderError, createPricedOrder, captureStoredOrder, publicOrder } = await import("./orders.mjs")
 const { anchorSettlement, readSettlementAudit, settlementNetwork, settlementWritesEnabled, anchorEventFromBody } = await import("./audit.mjs")
 
-const PORT = Number(process.env.ASSIST_PORT ?? "8787")
+// Hosts that assign a port (Render sets PORT) win over the local default.
+const PORT = Number(process.env.ASSIST_PORT ?? process.env.PORT ?? "8787")
 const CORS = (process.env.ASSIST_CORS ?? "").split(",").map((s) => s.trim()).filter(Boolean)
 const PLAN = PLANS[process.env.ASSIST_DEFAULT_PLAN] ?? PLANS.free
 const STORE_PATH = process.env.KEYSTORE_PATH ?? "./data/keystore.json"
@@ -83,6 +84,39 @@ if (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
   }
 }
 const orderLedger = new OrderLedger(process.env.ORDERS_PATH ?? "./data/orders.json")
+
+// A managed host gives the service an empty disk on every boot, so the keystore
+// file is not there when the process starts. Keys named in MACHAM_API_KEY and
+// MACHAM_BOOTSTRAP_KEYS (comma-separated) are provisioned once at startup, then
+// served from the store like any minted key. Nothing is re-created if present.
+function provisionKeys() {
+  const named = [process.env.MACHAM_API_KEY, ...(process.env.MACHAM_BOOTSTRAP_KEYS ?? "").split(",")]
+    .map((s) => (s ?? "").trim())
+    .filter(Boolean)
+  if (!named.length) return
+  const store = loadStore()
+  for (const secret of named) {
+    const parsed = parseKey(secret)
+    if (!parsed) {
+      console.log(JSON.stringify({ t: new Date().toISOString(), msg: "Bootstrap key malformed; skipped." }))
+      continue
+    }
+    const fingerprint = fingerprintOf(secret)
+    if (store.findByFingerprint(fingerprint)) continue
+    store.save({
+      id: `key_${fingerprint.slice(0, 8)}`,
+      prefix: `mch_${parsed.env}`,
+      env: parsed.env,
+      fingerprint,
+      scopes: { catalog: true, assist: true, orders: Boolean(paypal), admin: false },
+      expiresAt: null,
+      createdAt: Date.now(),
+      revokedAt: null,
+    })
+    console.log(JSON.stringify({ t: new Date().toISOString(), msg: "Bootstrap key provisioned.", key: `mch_${parsed.env}_…${fingerprint.slice(0, 6)}` }))
+  }
+}
+provisionKeys()
 
 function log(id, method, path, status, ms, extra) {
   console.log(JSON.stringify({ t: new Date().toISOString(), id, method, path, status, ms, ...extra }))

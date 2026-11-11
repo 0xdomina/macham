@@ -322,6 +322,37 @@ $<HTMLFormElement>("try-form").addEventListener("submit", (e) => {
   input.value = "";
   handle(v);
 });
+// ── the gateway chip: proves the storefront talks to the deployed gateway ──
+const GATEWAY = "https://macham-gateway.onrender.com";
+const gw = $<HTMLAnchorElement>("gw");
+const gwText = $("gw-text");
+if (gw && gwText) {
+  let misses = 0;
+  const paint = (state: "live" | "waking" | "offline", ms = 0) => {
+    gw.classList.toggle("online", state === "live");
+    gw.classList.toggle("cold", state === "waking");
+    gw.classList.toggle("offline", state === "offline");
+    gwText.textContent = state === "live" ? "live" : state === "waking" ? "waking" : "offline";
+    gw.title = state === "live" ? `Gateway answering in ${ms} ms` : state === "waking" ? "Free tier spins the gateway up on first request. Checking again…" : "Gateway unreachable. Try again in a minute.";
+  };
+  const ping = async () => {
+    const t0 = performance.now();
+    try {
+      const r = await fetch(GATEWAY + "/health", { cache: "no-store", signal: AbortSignal.timeout(8000) });
+      const j = await r.json();
+      if (!r.ok || !j?.ok) throw new Error("bad status");
+      misses = 0;
+      paint("live", Math.round(performance.now() - t0));
+    } catch {
+      misses += 1;
+      paint(misses >= 3 ? "offline" : "waking");
+    }
+  };
+  paint("waking");
+  ping();
+  window.setInterval(ping, 30000);
+}
+
 tryApprove.addEventListener("click", () => {
   if (tryCart.size === 0) return;
   let total = 0;

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/icon-128.png">
 <title>Macham</title>
 <meta name="description" content="Ask in plain words. Approve one total. PayPal captures that exact amount.">
 <meta property="og:title" content="Macham">
@@ -19,6 +20,7 @@
     <a href="#flow">Flow</a>
     <a href="#merchants">Stores</a>
   </nav>
+  <a class="gw" id="gw" href="https://macham-gateway.onrender.com/health" target="_blank" rel="noreferrer" title="Macham gateway"><i></i><span id="gw-text">gateway</span></a>
 </header>
 
 <main>
@@ -131,7 +133,7 @@
     <div class="glass snippet-card">
       <pre id="install-code">&lt;script src="https://macham.vercel.app/macham.js" defer&gt;&lt;/script&gt;
 &lt;script&gt;
-  Macham.init({ apiKey: "mch_live_bd8c89d26e9f77097b0c920227e90519ffabcfd008b8aeb1_70b07ae6", tenantId: "my-store" })
+  Macham.init({ apiKey: "mch_live_bd8c89d26e9f77097b0c920227e90519ffabcfd008b8aeb1_70b07ae6", tenantId: "my-store", assistUrl: "https://macham-gateway.onrender.com" })
 &lt;/script&gt;</pre>
       <button class="btn small" type="button" data-copy>Copy</button>
     </div>

@@ -37,6 +37,16 @@ header.top{position:sticky;top:14px;z-index:20;margin:14px auto 0;width:min(1080
 header nav{margin-left:auto;display:flex;gap:4px}
 header nav a{color:var(--mute);padding:8px 12px;border-radius:999px;font-size:14px;transition:color .2s,background .2s}
 header nav a:hover{color:var(--ink);background:var(--glass-2)}
+.gw{margin-left:10px;display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--mute);text-transform:uppercase;transition:border-color .2s,color .2s,background .2s;white-space:nowrap}
+.gw:hover{background:var(--glass-2)}
+.gw i{width:8px;height:8px;border-radius:50%;background:#5b6478;box-shadow:0 0 8px rgba(0,0,0,.4);transition:background .3s,box-shadow .3s}
+.gw.online{color:var(--lime);border-color:rgba(198,255,90,.4)}
+.gw.online i{background:var(--lime);box-shadow:0 0 10px var(--lime)}
+.gw.cold{color:#ffc439;border-color:rgba(255,196,57,.35)}
+.gw.cold i{background:#ffc439;animation:pulse-gw 1.1s ease-in-out infinite}
+@keyframes pulse-gw{50%{opacity:.35}}
+.gw.offline{color:#ff8a7a;border-color:rgba(255,138,122,.3)}
+.gw.offline i{background:#ff8a7a}
 
 main{width:min(1080px,calc(100% - 28px));margin:0 auto}
 
