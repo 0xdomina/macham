@@ -80,7 +80,7 @@ store page   widget + reader       holds mch_ key only
 Install from source; the package is not published to npm.
 
 ```bash
-git clone https://github.com/0xdfinity/macham.git
+git clone https://github.com/0xdomina/macham.git
 cd macham
 npm install
 npm run build   # tsc -p tsconfig.build.json, writes dist/
