@@ -1,4 +1,4 @@
-# Macham
+# Macham.
 
 Macham puts a buyer agent on any fixed-price store with one line: it reads the live catalog, answers shoppers in plain language, and proposes a cart that a person approves before PayPal charges.
 
